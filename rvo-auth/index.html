@@ -1,17 +1,96 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="EcoBag Marketplace — Carry a Greener Future with handmade sustainable bags." />
-    <title>EcoBag Marketplace</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stark E-Commerce | Checkout</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .checkout-panel {
+            background: #1e1e1e;
+            padding: 40px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,255,255,0.1);
+        }
+        .btn {
+            background: #00e5ff;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        .btn:hover { background: #00b3cc; }
+        .btn:disabled { background: #555; cursor: not-allowed; color: #888; }
+        #status-msg { margin-top: 20px; font-weight: bold; min-height: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="checkout-panel">
+        <h2>Cart Total: ₹150.00</h2>
+        <p>1x Pixel Art Asset Pack</p>
+        <button id="pay-btn" class="btn">Pay Securely (Mock)</button>
+        <div id="status-msg"></div>
+    </div>
+
+    <script>
+        // ⚠️ INJECT YOUR NGROK URL HERE ⚠️
+        const BACKEND_URL = "https://nonpedagogic-chondriosomal-everette.ngrok-free.dev";
+
+        document.getElementById('pay-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('pay-btn');
+            const status = document.getElementById('status-msg');
+            
+            btn.innerText = "Processing via Gateway...";
+            btn.disabled = true;
+            status.innerText = "";
+            status.style.color = "#ffffff";
+            
+            try {
+                // Firing the payload to your FastAPI Engine
+                const response = await fetch(`${BACKEND_URL}/api/create-order`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        cart_items: ["Pixel Art Asset Pack"],
+                        total_amount: 150.00
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    btn.style.display = "none";
+                    status.style.color = "#00e5ff"; 
+                    status.innerText = `✅ Payment Confirmed! Order ID: ${data.order_id}`;
+                } else {
+                    throw new Error("Gateway Refusal");
+                }
+
+            } catch (error) {
+                console.error("[SYSTEM ERROR]", error);
+                btn.innerText = "Retry Transaction";
+                btn.disabled = false;
+                status.style.color = "#ff4444";
+                status.innerText = "⚠️ Link severed. Ensure Ngrok and FastAPI are active.";
+            }
+        });
+    </script>
+</body>
 </html>
