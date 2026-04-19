@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FiSearch, FiHeart, FiShoppingCart, FiUser } from 'react-icons/fi';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
@@ -7,10 +7,12 @@ import { useAuth } from '../../context/AuthContext';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const { cartTotal } = useCart();
   const { wishlistItems } = useWishlist();
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,9 +22,44 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Sync search input with URL
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const query = searchParams.get('search');
+    if (query !== null) {
+      setSearchQuery(query);
+    } else {
+      setSearchQuery('');
+    }
+  }, [location.search]);
+
   const handleLogout = async () => {
     await logout();
     navigate('/login');
+  };
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    
+    // Only navigate instantly if already on the products page to avoid abrupt redirects,
+    // otherwise wait for form submit.
+    if (location.pathname === '/products') {
+      if (value.trim()) {
+        navigate(`/products?search=${encodeURIComponent(value)}`);
+      } else {
+        navigate(`/products`);
+      }
+    }
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      navigate(`/products`);
+    }
   };
 
   return (
@@ -49,11 +86,21 @@ const Navbar = () => {
           <Link to="/about" className="text-forest-green hover:text-premium-gold transition-colors font-medium hover:-translate-y-0.5 inline-block">About Us</Link>
         </div>
 
-        {/* Icons */}
-        <div className="flex space-x-6 items-center">
-          <button className="text-forest-green hover:text-premium-gold transition-colors hidden sm:block">
-            <FiSearch className="text-xl" />
-          </button>
+        {/* Icons & Search */}
+        <div className="flex space-x-4 lg:space-x-6 items-center">
+          
+          <form onSubmit={handleSearchSubmit} className="hidden sm:flex items-center bg-white border border-forest-green/20 rounded-full px-3 py-1.5 focus-within:border-premium-gold focus-within:ring-1 focus-within:ring-premium-gold transition-all w-32 lg:w-48 xl:w-64">
+            <input 
+              type="text" 
+              placeholder="Search..." 
+              className="bg-transparent border-none focus:outline-none text-sm w-full text-forest-green placeholder-forest-green/40"
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+            <button type="submit" className="text-forest-green hover:text-premium-gold ml-1">
+              <FiSearch className="text-lg" />
+            </button>
+          </form>
           
           <Link to="/wishlist" className="relative text-forest-green hover:text-premium-gold transition-colors">
             <FiHeart className="text-xl" />
