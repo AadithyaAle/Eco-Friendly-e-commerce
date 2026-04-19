@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@theme {
+  --color-forest-green: #1F4D36;
+  --color-premium-gold: #C8A96B;
+  --color-ivory-white: #FAF9F6;
+  
+  --font-serif: 'Playfair Display', serif;
+  --font-sans: 'Poppins', sans-serif;
+  --font-accent: 'Yatra One', cursive;
+}
+
+@layer base {
+  body {
+    @apply bg-ivory-white text-forest-green font-sans m-0 p-0 antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-accent tracking-wide;
+  }
+}
+
+/* Custom Utilities based on PRD Requirements */
+@layer utilities {
+  .section-padding {
+    @apply py-16 px-6 md:px-12 lg:px-24 max-w-[1440px] mx-auto;
+  }
+  
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/20;
+  }
+  
+  .premium-btn {
+    @apply inline-flex items-center justify-center px-6 py-3 font-sans font-medium text-white transition-all duration-300 bg-forest-green rounded-full hover:bg-[#153826] hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-forest-green/30;
+  }
+
+  .premium-btn-outline {
+    @apply inline-flex items-center justify-center px-6 py-3 font-sans font-medium transition-all duration-300 border-2 rounded-full border-premium-gold text-premium-gold hover:bg-premium-gold hover:text-white hover:-translate-y-1 hover:shadow-[0_4px_14px_0_rgba(200,169,107,0.39)] focus:outline-none;
+  }
+
+  .heading-accent {
+    @apply font-accent tracking-wide;
+  }
+}
