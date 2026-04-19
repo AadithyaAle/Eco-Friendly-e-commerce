@@ -2,15 +2,37 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiHeart, FiTrash2, FiShoppingBag, FiArrowRight } from 'react-icons/fi';
 import { motion } from 'framer-motion';
+import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
+import { toast } from 'react-hot-toast';
 
 const Wishlist = () => {
-  const [items, setItems] = useState([
-    { id: 3, name: 'Eco Minimalist Bottle Cover', price: 599, image: 'https://images.unsplash.com/photo-1620330925769-d4cbae08c5c7?auto=format&fit=crop&w=400&q=80', inStock: true },
-    { id: 4, name: 'Heritage Upcycled Tiffin Bag', price: 899, image: 'https://images.unsplash.com/photo-1584916201218-f4242ceb4809?auto=format&fit=crop&w=400&q=80', inStock: false },
-    { id: 5, name: 'Canvas Travel Organizer', price: 1199, image: 'https://images.unsplash.com/photo-1584305581177-84bc3623fa55?auto=format&fit=crop&w=400&q=80', inStock: true }
-  ]);
+  const { wishlistItems: items, removeFromWishlist } = useWishlist();
+  const { addToCart } = useCart();
 
-  const removeItem = (id) => setItems(items.filter(item => item.id !== id));
+  const handleRemove = (id) => {
+    removeFromWishlist(id);
+    toast.success('Removed from wishlist');
+  };
+
+  const handleMoveToCart = (item) => {
+    addToCart(item, 1);
+    removeFromWishlist(item.id);
+    toast.success(`${item.name} moved to cart`);
+  };
+
+  const handleMoveAllToCart = () => {
+    const inStockItems = items.filter(i => i.inStock);
+    inStockItems.forEach(item => {
+      addToCart(item, 1);
+      removeFromWishlist(item.id);
+    });
+    if (inStockItems.length > 0) {
+      toast.success(`Moved ${inStockItems.length} items to cart`);
+    } else {
+      toast.error('No items in stock to move');
+    }
+  };
 
   if (items.length === 0) {
     return (
@@ -28,13 +50,16 @@ const Wishlist = () => {
   }
 
   return (
-    <div className="section-padding py-24 pt-32 bg-ivory-white min-h-screen">
+    <div className="section-padding py-24 min-h-screen bg-ivory-white">
       <div className="flex justify-between items-end mb-10 border-b border-forest-green/10 pb-6">
         <div>
           <h1 className="text-4xl font-serif text-forest-green mb-2">My Wishlist</h1>
           <p className="text-forest-green/70">You have {items.length} items saved</p>
         </div>
-        <button className="hidden sm:flex text-forest-green hover:text-premium-gold items-center space-x-2 transition-colors">
+        <button 
+          onClick={handleMoveAllToCart}
+          className="hidden sm:flex text-forest-green hover:text-premium-gold items-center space-x-2 transition-colors"
+        >
           <span>Move all to Cart</span> <FiArrowRight />
         </button>
       </div>
@@ -51,7 +76,7 @@ const Wishlist = () => {
             <div className="relative h-64 overflow-hidden bg-gray-50">
               <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
               <button 
-                onClick={() => removeItem(item.id)}
+                onClick={() => handleRemove(item.id)}
                 className="absolute top-4 right-4 p-2 bg-white/80 rounded-full text-red-400 hover:text-red-600 hover:bg-white shadow-sm transition-all"
                 title="Remove from wishlist"
               >
@@ -71,6 +96,7 @@ const Wishlist = () => {
               
               <button 
                 disabled={!item.inStock}
+                onClick={() => handleMoveToCart(item)}
                 className={`w-full flex items-center justify-center space-x-2 py-3 rounded-full font-medium transition-all ${
                   item.inStock 
                     ? 'border-2 border-forest-green text-forest-green hover:bg-forest-green hover:text-white' 
