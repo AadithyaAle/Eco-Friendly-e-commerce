@@ -21,8 +21,8 @@ const Home = () => {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { addToCart } = useCart();
 
-  // Pick first 4 products for Bestsellers
-  const bestsellers = products.slice(0, 4);
+  // Pick up to 4 products marked as Bestsellers
+  const bestsellers = products.filter(p => p.best_seller).slice(0, 4);
 
   const handleAddToCart = (e, product) => {
     e.preventDefault();

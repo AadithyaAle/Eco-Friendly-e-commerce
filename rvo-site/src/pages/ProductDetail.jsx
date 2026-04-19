@@ -182,12 +182,18 @@ const ProductDetail = () => {
         <div className="min-h-[200px] text-forest-green/80 leading-relaxed font-sans bg-white p-8 rounded-2xl border border-forest-green/5 shadow-sm">
           {activeTab === 'description' && (
             <div className="space-y-4">
-              <p>Every piece in our Designer Collection is unique. By sourcing end-of-roll premium fabrics and gently used garments, we create small-batch runs of luxury accessories that don't cost the Earth.</p>
+              <p>{product.full_description || product.description || 'Every piece in our Designer Collection is unique. By sourcing end-of-roll premium fabrics and gently used garments, we create small-batch runs of luxury accessories that don\'t cost the Earth.'}</p>
               <ul className="list-disc pl-5 mt-4 space-y-2">
-                <li>Dimensions: 16" H x 14" W x 4" D</li>
-                <li>Laptop sleeve fits up to 15"</li>
-                <li>Interior zipper pocket for valuables</li>
-                <li>Reinforced double-stitched straps</li>
+                {product.dimensions && <li>Dimensions: {product.dimensions}</li>}
+                {product.weight && <li>Weight: {product.weight}</li>}
+                {product.color && <li>Color: {product.color}</li>}
+                {!product.dimensions && !product.weight && !product.color && (
+                  <>
+                    <li>Dimensions: 16" H x 14" W x 4" D</li>
+                    <li>Laptop sleeve fits up to 15"</li>
+                    <li>Reinforced double-stitched straps</li>
+                  </>
+                )}
               </ul>
             </div>
           )}
@@ -203,13 +209,15 @@ const ProductDetail = () => {
           )}
           {activeTab === 'care' && (
             <div className="space-y-4">
-              <p>To ensure the longevity of your RVO Fabric product, please follow these care guidelines:</p>
-              <ul className="list-disc pl-5 mt-4 space-y-2">
-                <li>Spot clean with minimal water and mild soap for small stains.</li>
-                <li>Gentle cold hand wash only when necessary.</li>
-                <li>Do not machine wash, bleach, or tumble dry.</li>
-                <li>Dry flat in shade to preserve colors and fabric integrity.</li>
-              </ul>
+              <p>{product.care_instructions || 'To ensure the longevity of your RVO Fabric product, please follow these care guidelines:'}</p>
+              {!product.care_instructions && (
+                <ul className="list-disc pl-5 mt-4 space-y-2">
+                  <li>Spot clean with minimal water and mild soap for small stains.</li>
+                  <li>Gentle cold hand wash only when necessary.</li>
+                  <li>Do not machine wash, bleach, or tumble dry.</li>
+                  <li>Dry flat in shade to preserve colors and fabric integrity.</li>
+                </ul>
+              )}
             </div>
           )}
         </div>

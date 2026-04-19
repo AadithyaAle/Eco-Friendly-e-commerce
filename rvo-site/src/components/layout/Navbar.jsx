@@ -15,7 +15,7 @@ const Navbar = () => {
   const cartTotal = cartItems ? cartItems.length : 0;
 
   const { wishlistItems } = useWishlist();
-  const { currentUser, logout } = useAuth();
+  const { currentUser, userProfile, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -134,6 +134,9 @@ const Navbar = () => {
             {/* User Dropdown Profile menu */}
             {currentUser && (
               <div className="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-lg py-2 border border-forest-green/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                {userProfile?.role === 'admin' && (
+                  <Link to="/admin/dashboard" className="block px-4 py-2 text-sm text-premium-gold font-semibold hover:bg-forest-green/5">Admin Panel</Link>
+                )}
                 <Link to="/profile" className="block px-4 py-2 text-sm text-forest-green hover:bg-forest-green/5">My Profile</Link>
                 <Link to="/wishlist" className="block px-4 py-2 text-sm text-forest-green hover:bg-forest-green/5">Wishlist</Link>
                 <button 
