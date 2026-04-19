@@ -27,12 +27,9 @@ yarn-error.log*
 *.suo
 *.sw?
 
-<<<<<<< HEAD
 .env.local
 .env.development.local
 .env.test.local 
-=======
 # Backend specific
 __pycache__/
 *.pyc
->>>>>>> 3a81b214b8ff940a36a71808c6585fa32bc91342
