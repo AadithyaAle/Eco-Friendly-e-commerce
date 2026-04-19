@@ -1,7 +1,10 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import { db } from '../config/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { 
+  getWishlist, 
+  addToWishlist as apiAddToWishlist, 
+  removeFromWishlist as apiRemoveFromWishlist
+} from '../services/wishlist';
 
 const WishlistContext = createContext();
 
@@ -20,18 +23,18 @@ export function WishlistProvider({ children }) {
       setIsLoading(true);
       try {
         if (currentUser) {
-          const docRef = doc(db, 'users', currentUser.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists() && docSnap.data().wishlist) {
-            setWishlistItems(docSnap.data().wishlist);
-          } else {
-            const localWishlist = JSON.parse(localStorage.getItem('rvo_wishlist')) || [];
-            if(localWishlist.length > 0) {
-              setWishlistItems(localWishlist);
-            }
-          }
+          const data = await getWishlist(currentUser.uid);
+          const formattedWishlist = data.map(wi => ({
+            wishlistItemId: wi.id,
+            id: wi.product_id,
+            name: wi.product?.name,
+            price: wi.product?.price || wi.product?.discount_price,
+            image: wi.product?.image,
+            inStock: wi.product?.stock > 0
+          }));
+          setWishlistItems(formattedWishlist);
         } else {
-          const localWishlist = JSON.parse(localStorage.getItem('rvo_wishlist')) || [];
+          const localWishlist = JSON.parse(localStorage.getItem('rvo_wishlist_v2')) || [];
           setWishlistItems(localWishlist);
         }
       } catch (error) {
@@ -45,37 +48,53 @@ export function WishlistProvider({ children }) {
     }
   }, [currentUser]);
 
-  // Save wishlist on change
+  // Save wishlist for guests
   useEffect(() => {
-    if (isLoading) return;
-
-    localStorage.setItem('rvo_wishlist', JSON.stringify(wishlistItems));
-
-    if (currentUser) {
-      const syncToFirestore = async () => {
-        try {
-          const docRef = doc(db, 'users', currentUser.uid);
-          await setDoc(docRef, { wishlist: wishlistItems }, { merge: true });
-        } catch (error) {
-          console.error("Failed to sync wishlist", error);
-        }
-      };
-      syncToFirestore();
+    if (!isLoading && !currentUser) {
+      localStorage.setItem('rvo_wishlist_v2', JSON.stringify(wishlistItems));
     }
   }, [wishlistItems, currentUser, isLoading]);
 
-  const toggleWishlist = (product) => {
-    setWishlistItems(prev => {
-      const exists = prev.some(item => item.id === product.id);
-      if (exists) {
-        return prev.filter(item => item.id !== product.id);
+  const toggleWishlist = async (product) => {
+    const exists = wishlistItems.some(item => item.id === product.id);
+    
+    if (exists) {
+      await removeFromWishlist(product.id);
+    } else {
+      // optimistic update
+      setWishlistItems(prev => [...prev, { ...product, id: product.id }]);
+      
+      if (currentUser) {
+        try {
+          await apiAddToWishlist(currentUser.uid, product.id);
+          // reload to get wishlistItemId
+          const data = await getWishlist(currentUser.uid);
+          setWishlistItems(data.map(wi => ({
+            wishlistItemId: wi.id,
+            id: wi.product_id,
+            name: wi.product?.name,
+            price: wi.product?.price || wi.product?.discount_price,
+            image: wi.product?.image,
+            inStock: wi.product?.stock > 0
+          })));
+        } catch (e) {
+          console.error(e);
+        }
       }
-      return [...prev, product];
-    });
+    }
   };
 
-  const removeFromWishlist = (id) => {
+  const removeFromWishlist = async (id) => {
+    const itemToRemove = wishlistItems.find(item => item.id === id);
     setWishlistItems(prev => prev.filter(item => item.id !== id));
+
+    if (currentUser && itemToRemove?.wishlistItemId) {
+      try {
+        await apiRemoveFromWishlist(itemToRemove.wishlistItemId);
+      } catch (e) {
+        console.error(e);
+      }
+    }
   };
   
   const isInWishlist = (id) => {
@@ -87,7 +106,8 @@ export function WishlistProvider({ children }) {
       wishlistItems,
       toggleWishlist,
       removeFromWishlist,
-      isInWishlist
+      isInWishlist,
+      isLoading
     }}>
       {children}
     </WishlistContext.Provider>

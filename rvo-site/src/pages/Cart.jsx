@@ -1,32 +1,34 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FiTrash2, FiMinus, FiPlus, FiShoppingBag, FiArrowRight } from 'react-icons/fi';
 import { motion } from 'framer-motion';
+import { useCart } from '../context/CartContext';
 
 const Cart = () => {
-  const [items, setItems] = useState([
-    { id: 1, name: 'Premium Eco Tote Bag', price: 1499, qty: 1, image: 'https://images.unsplash.com/photo-1544816155-12df9643f361?auto=format&fit=crop&w=200&q=80' },
-    { id: 2, name: 'Upcycled Denim Yoga Mat Cover', price: 1299, qty: 1, image: 'https://images.unsplash.com/photo-1601121840801-44eb1c9676e1?auto=format&fit=crop&w=200&q=80' }
-  ]);
   const [couponCode, setCouponCode] = useState('');
+  const navigate = useNavigate();
+  const { cartItems, removeFromCart, updateQuantity, subtotal, isLoading } = useCart();
 
-  const updateQty = (id, delta) => {
-    setItems(items.map(item => {
-      if (item.id === id) {
-        const newQty = Math.max(1, item.qty + delta);
-        return { ...item, qty: newQty };
-      }
-      return item;
-    }));
-  };
-
-  const removeItem = (id) => setItems(items.filter(item => item.id !== id));
-
-  const subtotal = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
-  const shipping = subtotal > 999 ? 0 : 99;
+  const shipping = subtotal > 999 || subtotal === 0 ? 0 : 99;
   const total = subtotal + shipping;
 
-  if (items.length === 0) {
+  if (isLoading) {
+    return (
+      <div className="section-padding py-24 pt-48 bg-ivory-white min-h-screen">
+        <h1 className="text-4xl font-serif text-forest-green mb-10 border-b border-forest-green/10 pb-6">Your Cart</h1>
+        <div className="flex flex-col lg:flex-row gap-12 animate-pulse">
+          <div className="flex-grow space-y-6">
+            {[1,2].map((i) => (
+              <div key={i} className="flex flex-col sm:flex-row items-center gap-6 p-4 rounded-xl bg-gray-100 h-40"></div>
+            ))}
+          </div>
+          <div className="w-full lg:w-96 flex-shrink-0 bg-gray-100 h-96 rounded-2xl"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (cartItems.length === 0) {
     return (
       <div className="section-padding py-32 bg-ivory-white min-h-screen flex flex-col items-center justify-center text-center">
         <div className="w-24 h-24 bg-forest-green/5 rounded-full flex items-center justify-center text-4xl text-premium-gold mb-6">
@@ -43,12 +45,12 @@ const Cart = () => {
 
   return (
     <div className="section-padding py-24 pt-48 bg-ivory-white min-h-screen">
-      <h1 className="text-4xl font-serif text-forest-green mb-10 border-b border-forest-green/10 pb-6">Your Cart ({items.length})</h1>
+      <h1 className="text-4xl font-serif text-forest-green mb-10 border-b border-forest-green/10 pb-6">Your Cart ({cartItems.length})</h1>
       
       <div className="flex flex-col lg:flex-row gap-12">
         {/* Cart Items */}
         <div className="flex-grow space-y-6">
-          {items.map((item, idx) => (
+          {cartItems.map((item, idx) => (
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -62,19 +64,19 @@ const Cart = () => {
               
               <div className="flex-grow w-full">
                 <Link to={`/product/${item.id}`} className="text-xl font-serif text-forest-green hover:text-premium-gold mb-1 block line-clamp-1">{item.name}</Link>
-                <div className="text-sm text-forest-green/60 mb-4">Color: Forest Green | Size: Regular</div>
+                <div className="text-sm text-forest-green/60 mb-4">Eco-friendly Selection</div>
                 
                 <div className="flex justify-between items-center w-full">
                   <div className="font-sans font-semibold text-lg text-forest-green">₹{item.price * item.qty}</div>
                   
                   <div className="flex items-center space-x-1 sm:space-x-4">
                     <div className="flex items-center border border-forest-green/20 rounded-full">
-                      <button onClick={() => updateQty(item.id, -1)} className="p-2 text-forest-green hover:text-premium-gold"><FiMinus /></button>
+                      <button onClick={() => updateQuantity(item.id, -1)} className="p-2 text-forest-green hover:text-premium-gold"><FiMinus /></button>
                       <span className="w-6 sm:w-8 text-center font-medium text-forest-green select-none">{item.qty}</span>
-                      <button onClick={() => updateQty(item.id, 1)} className="p-2 text-forest-green hover:text-premium-gold"><FiPlus /></button>
+                      <button onClick={() => updateQuantity(item.id, 1)} className="p-2 text-forest-green hover:text-premium-gold"><FiPlus /></button>
                     </div>
                     
-                    <button onClick={() => removeItem(item.id)} className="p-2 text-red-400 hover:text-red-600 transition-colors ml-2" title="Remove Item">
+                    <button onClick={() => removeFromCart(item.id)} className="p-2 text-red-400 hover:text-red-600 transition-colors ml-2" title="Remove Item">
                       <FiTrash2 className="text-xl" />
                     </button>
                   </div>
@@ -123,7 +125,10 @@ const Cart = () => {
               <p className="text-xs text-forest-green/50 text-right mt-1">Including GST</p>
             </div>
 
-            <button className="w-full premium-btn text-lg py-4 flex items-center justify-center space-x-2">
+            <button 
+              onClick={() => navigate('/checkout')}
+              className="w-full premium-btn text-lg py-4 flex items-center justify-center space-x-2"
+            >
               <span>Checkout</span> <FiArrowRight />
             </button>
           </div>

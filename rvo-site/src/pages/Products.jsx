@@ -1,19 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiFilter, FiHeart, FiShoppingBag, FiChevronDown } from 'react-icons/fi';
 import { motion } from 'framer-motion';
+import { getProducts } from '../services/products';
+import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 
 const Products = () => {
   const [showFilters, setShowFilters] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Generate 12 dummy products
-  const products = Array.from({ length: 12 }).map((_, i) => ({
-    id: i + 1,
-    name: `Eco-Friendly ${['Tote', 'Yoga Bag', 'Bottle Cover', 'Sleeve'][i % 4]} ${i + 1}`,
-    price: 999 + (i * 250),
-    image: `https://images.unsplash.com/photo-1544816155-12df9643f36${i % 10}?auto=format&fit=crop&w=400&q=80`,
-    eco: `Saved ${1 + (i % 3)}.5kg CO2`
-  }));
+  const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setIsLoading(true);
+      const data = await getProducts();
+      setProducts(data);
+      setIsLoading(false);
+    };
+    fetchProducts();
+  }, []);
 
   return (
     <div className="section-padding py-24 pt-40 md:pt-48 bg-ivory-white min-h-screen">
@@ -70,39 +79,71 @@ const Products = () => {
 
         {/* Product Grid */}
         <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((product, i) => (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              key={product.id} 
-              className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group border border-forest-green/5 relative"
-            >
-              <Link to={`/product/${product.id}`} className="block relative h-72 overflow-hidden bg-gray-50">
-                <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-              </Link>
-              <div className="p-6">
-                <button 
-                  className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-sm rounded-full text-forest-green hover:text-premium-gold hover:bg-white shadow-sm transition-all z-10"
-                  onClick={(e) => { e.preventDefault(); /* handle favorites */ }}
-                >
-                  <FiHeart />
-                </button>
-                <div className="mb-4 pt-2">
-                  <Link to={`/product/${product.id}`}>
-                    <h3 className="font-serif text-lg text-forest-green hover:text-premium-gold transition-colors line-clamp-1">{product.name}</h3>
-                  </Link>
-                  <p className="text-sm text-forest-green/60 mt-1">Upcycled Cotton</p>
-                </div>
-                <div className="flex justify-between items-center border-t border-gray-100 pt-4">
-                  <span className="font-sans font-semibold text-xl text-forest-green">₹{product.price}</span>
-                  <button className="text-premium-gold flex items-center space-x-2 font-medium hover:text-forest-green transition-colors">
-                    <FiShoppingBag /> <span>Add</span>
-                  </button>
+          {isLoading ? (
+            // Skeleton Loaders
+            Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm border border-forest-green/5 animate-pulse">
+                <div className="h-72 bg-gray-200"></div>
+                <div className="p-6">
+                  <div className="h-6 bg-gray-200 rounded w-3/4 mb-3"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
+                  <div className="flex justify-between items-center border-t border-gray-100 pt-4">
+                    <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+                    <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+                  </div>
                 </div>
               </div>
-            </motion.div>
-          ))}
+            ))
+          ) : (
+            products.map((product, i) => (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                key={product.id} 
+                className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group border border-forest-green/5 relative"
+              >
+                <Link to={`/product/${product.id}`} className="block relative h-72 overflow-hidden bg-gray-50">
+                  <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                </Link>
+                <div className="p-6">
+                  <button 
+                    className={`absolute top-4 right-4 p-2 backdrop-blur-sm rounded-full transition-all z-10 shadow-sm ${isInWishlist(product.id) ? 'bg-red-50 text-red-500' : 'bg-white/80 text-forest-green hover:text-premium-gold hover:bg-white'}`}
+                    onClick={(e) => { 
+                      e.preventDefault();
+                      toggleWishlist(product);
+                    }}
+                  >
+                    <FiHeart className={isInWishlist(product.id) ? "fill-current" : ""} />
+                  </button>
+                  <div className="mb-4 pt-2">
+                    <Link to={`/product/${product.id}`}>
+                      <h3 className="font-serif text-lg text-forest-green hover:text-premium-gold transition-colors line-clamp-1">{product.name}</h3>
+                    </Link>
+                    <p className="text-sm text-forest-green/60 mt-1">{product.material || 'Upcycled Material'}</p>
+                  </div>
+                  <div className="flex justify-between items-center border-t border-gray-100 pt-4">
+                    <div className="flex flex-col">
+                       {product.discount_price && product.discount_price < product.price ? (
+                         <>
+                           <span className="font-sans font-semibold text-xl text-forest-green">₹{product.discount_price}</span>
+                           <span className="font-sans text-sm text-forest-green/60 line-through">₹{product.price}</span>
+                         </>
+                       ) : (
+                         <span className="font-sans font-semibold text-xl text-forest-green">₹{product.price}</span>
+                       )}
+                    </div>
+                    <button 
+                      onClick={() => addToCart(product)}
+                      className="text-premium-gold flex items-center space-x-2 font-medium hover:text-forest-green transition-colors"
+                    >
+                      <FiShoppingBag /> <span>Add</span>
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))
+          )}
         </div>
       </div>
     </div>

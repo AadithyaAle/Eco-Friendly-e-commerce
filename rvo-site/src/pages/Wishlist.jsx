@@ -1,18 +1,47 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FiHeart, FiTrash2, FiShoppingBag, FiArrowRight } from 'react-icons/fi';
 import { motion } from 'framer-motion';
+import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
+import toast from 'react-hot-toast';
 
 const Wishlist = () => {
-  const [items, setItems] = useState([
-    { id: 3, name: 'Eco Minimalist Bottle Cover', price: 599, image: 'https://images.unsplash.com/photo-1620330925769-d4cbae08c5c7?auto=format&fit=crop&w=400&q=80', inStock: true },
-    { id: 4, name: 'Heritage Upcycled Tiffin Bag', price: 899, image: 'https://images.unsplash.com/photo-1584916201218-f4242ceb4809?auto=format&fit=crop&w=400&q=80', inStock: false },
-    { id: 5, name: 'Canvas Travel Organizer', price: 1199, image: 'https://images.unsplash.com/photo-1584305581177-84bc3623fa55?auto=format&fit=crop&w=400&q=80', inStock: true }
-  ]);
+  const { wishlistItems, removeFromWishlist, isLoading } = useWishlist();
+  const { addToCart } = useCart();
+  const navigate = useNavigate();
 
-  const removeItem = (id) => setItems(items.filter(item => item.id !== id));
+  const handleMoveToCart = (item) => {
+    addToCart(item, 1);
+    removeFromWishlist(item.id);
+    toast.success('Moved to Cart');
+  };
 
-  if (items.length === 0) {
+  const handleMoveAllToCart = () => {
+    wishlistItems.forEach(item => {
+      if (item.inStock) {
+        addToCart(item, 1);
+        removeFromWishlist(item.id);
+      }
+    });
+    toast.success('All available items moved to Cart');
+    navigate('/cart');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="section-padding py-24 pt-32 bg-ivory-white min-h-screen">
+        <h1 className="text-4xl font-serif text-forest-green mb-10 border-b border-forest-green/10 pb-6">My Wishlist</h1>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 animate-pulse">
+          {[1,2,3,4].map((i) => (
+             <div key={i} className="bg-gray-100 rounded-xl h-96"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (wishlistItems.length === 0) {
     return (
       <div className="section-padding py-32 bg-ivory-white min-h-screen flex flex-col items-center justify-center text-center">
         <div className="w-24 h-24 bg-forest-green/5 rounded-full flex items-center justify-center text-4xl text-premium-gold mb-6">
@@ -32,15 +61,18 @@ const Wishlist = () => {
       <div className="flex justify-between items-end mb-10 border-b border-forest-green/10 pb-6">
         <div>
           <h1 className="text-4xl font-serif text-forest-green mb-2">My Wishlist</h1>
-          <p className="text-forest-green/70">You have {items.length} items saved</p>
+          <p className="text-forest-green/70">You have {wishlistItems.length} items saved</p>
         </div>
-        <button className="hidden sm:flex text-forest-green hover:text-premium-gold items-center space-x-2 transition-colors">
+        <button 
+          onClick={handleMoveAllToCart}
+          className="hidden sm:flex text-forest-green hover:text-premium-gold items-center space-x-2 transition-colors"
+        >
           <span>Move all to Cart</span> <FiArrowRight />
         </button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 rounded-xl">
-        {items.map((item, idx) => (
+        {wishlistItems.map((item, idx) => (
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -49,9 +81,11 @@ const Wishlist = () => {
             className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-forest-green/5 group"
           >
             <div className="relative h-64 overflow-hidden bg-gray-50">
-              <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+              <Link to={`/product/${item.id}`}>
+                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+              </Link>
               <button 
-                onClick={() => removeItem(item.id)}
+                onClick={() => removeFromWishlist(item.id)}
                 className="absolute top-4 right-4 p-2 bg-white/80 rounded-full text-red-400 hover:text-red-600 hover:bg-white shadow-sm transition-all"
                 title="Remove from wishlist"
               >
@@ -59,18 +93,21 @@ const Wishlist = () => {
               </button>
               
               {!item.inStock && (
-                <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] flex items-center justify-center">
+                <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] flex items-center justify-center pointer-events-none">
                   <span className="bg-forest-green text-white px-4 py-2 font-semibold uppercase text-xs tracking-widest rounded-full shadow-lg">Out of Stock</span>
                 </div>
               )}
             </div>
             
             <div className="p-6">
-              <h3 className="font-serif text-lg text-forest-green mb-3 line-clamp-1">{item.name}</h3>
+              <Link to={`/product/${item.id}`}>
+                <h3 className="font-serif text-lg text-forest-green mb-3 line-clamp-1 hover:text-premium-gold transition-colors">{item.name}</h3>
+              </Link>
               <div className="font-sans font-semibold text-xl text-forest-green mb-6">₹{item.price}</div>
               
               <button 
                 disabled={!item.inStock}
+                onClick={() => handleMoveToCart(item)}
                 className={`w-full flex items-center justify-center space-x-2 py-3 rounded-full font-medium transition-all ${
                   item.inStock 
                     ? 'border-2 border-forest-green text-forest-green hover:bg-forest-green hover:text-white' 

@@ -1,17 +1,52 @@
+import { useState } from 'react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { createOrder } from '../services/orders';
 
 const Checkout = () => {
   const { cartItems, subtotal, clearCart } = useCart();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
 
-  const handleCheckout = (e) => {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    address: ''
+  });
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const shipping = subtotal > 999 || subtotal === 0 ? 0 : 99;
+  const total = subtotal + shipping;
+
+  const handleCheckout = async (e) => {
     e.preventDefault();
-    if(cartItems.length === 0) return toast.error("Cart is empty");
-    toast.success("Order Placed Successfully!");
-    clearCart();
-    navigate('/');
+    if (cartItems.length === 0) return toast.error("Cart is empty");
+    if (!currentUser) return toast.error("Please login to place an order");
+
+    setIsProcessing(true);
+    try {
+      const shippingAddress = {
+        name: `${formData.firstName} ${formData.lastName}`,
+        address: formData.address
+      };
+
+      await createOrder(currentUser.uid, cartItems, total, shippingAddress);
+      
+      toast.success("Order Placed Successfully!");
+      await clearCart();
+      navigate('/profile');
+    } catch (error) {
+      console.error("Checkout failed:", error);
+      toast.error("Failed to place order. Try again.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   return (
@@ -25,15 +60,15 @@ const Checkout = () => {
             <div className="grid grid-cols-2 gap-4">
                <div>
                   <label className="block text-sm text-forest-green mb-1">First Name</label>
-                  <input required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold" />
+                  <input name="firstName" value={formData.firstName} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold" />
                </div>
                <div>
                   <label className="block text-sm text-forest-green mb-1">Last Name</label>
-                  <input required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold" />
+                  <input name="lastName" value={formData.lastName} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold" />
                </div>
                <div className="col-span-2">
                   <label className="block text-sm text-forest-green mb-1">Address</label>
-                  <input required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold" />
+                  <input name="address" value={formData.address} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold" />
                </div>
             </div>
           </form>
@@ -50,14 +85,21 @@ const Checkout = () => {
                </div>
                <div className="flex justify-between items-center">
                  <span className="text-forest-green/70">Shipping</span>
-                 <span className="font-semibold text-forest-green">Free</span>
+                 <span className="font-semibold text-forest-green">{shipping === 0 ? 'Free' : `₹${shipping}`}</span>
                </div>
                <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
                  <span className="text-lg font-serif text-forest-green">Total</span>
-                 <span className="text-xl font-sans font-bold text-premium-gold">₹{subtotal}</span>
+                 <span className="text-xl font-sans font-bold text-premium-gold">₹{total}</span>
                </div>
             </div>
-            <button form="checkout-form" type="submit" className="w-full premium-btn py-3">Place Order</button>
+            <button 
+              form="checkout-form" 
+              type="submit" 
+              disabled={isProcessing}
+              className={`w-full premium-btn py-3 flex items-center justify-center ${isProcessing ? 'opacity-70 cursor-not-allowed' : ''}`}
+            >
+              {isProcessing ? 'Processing...' : 'Place Order'}
+            </button>
           </div>
         </div>
       </div>

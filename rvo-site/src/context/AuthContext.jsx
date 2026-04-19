@@ -6,10 +6,11 @@ import {
   onAuthStateChanged,
   updateProfile,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  sendPasswordResetEmail
 } from 'firebase/auth';
-import { auth, db } from '../config/firebase';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { auth } from '../lib/firebase';
+import { createProfile, getProfile } from '../services/profile';
 
 const AuthContext = createContext();
 
@@ -19,6 +20,7 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   async function signup(email, password, fullName) {
@@ -26,13 +28,9 @@ export function AuthProvider({ children }) {
     await updateProfile(userCredential.user, {
       displayName: fullName
     });
-    await setDoc(doc(db, "users", userCredential.user.uid), {
-      email,
-      fullName,
-      createdAt: new Date().toISOString(),
-      cart: [],
-      wishlist: []
-    });
+    
+    // Create profile in Supabase
+    await createProfile(userCredential.user.uid, email, fullName);
     return userCredential;
   }
 
@@ -44,17 +42,10 @@ export function AuthProvider({ children }) {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
     
-    // Check if user exists in firestore, if not create empty structure
-    const userRef = doc(db, 'users', result.user.uid);
-    const docSnap = await getDoc(userRef);
-    if (!docSnap.exists()) {
-      await setDoc(userRef, {
-        email: result.user.email,
-        fullName: result.user.displayName,
-        createdAt: new Date().toISOString(),
-        cart: [],
-        wishlist: []
-      });
+    // Check if user profile exists in Supabase
+    const profile = await getProfile(result.user.uid);
+    if (!profile) {
+      await createProfile(result.user.uid, result.user.email, result.user.displayName || 'No Name');
     }
     return result;
   }
@@ -63,9 +54,19 @@ export function AuthProvider({ children }) {
     return signOut(auth);
   }
 
+  function resetPassword(email) {
+    return sendPasswordResetEmail(auth, email);
+  }
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
+      if (user) {
+        const profile = await getProfile(user.uid);
+        setUserProfile(profile);
+      } else {
+        setUserProfile(null);
+      }
       setLoading(false);
     });
 
@@ -74,10 +75,12 @@ export function AuthProvider({ children }) {
 
   const value = {
     currentUser,
+    userProfile,
     signup,
     login,
     loginWithGoogle,
-    logout
+    logout,
+    resetPassword
   };
 
   return (
