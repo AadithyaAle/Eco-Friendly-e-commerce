@@ -7,8 +7,13 @@ import { useAuth } from '../../context/AuthContext';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState('');
-  const { cartTotal } = useCart();
+
+
+  const { cartItems } = useCart();
+  const cartTotal = cartItems ? cartItems.length : 0;
+
   const { wishlistItems } = useWishlist();
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
