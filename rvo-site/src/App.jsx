@@ -35,6 +35,7 @@ import AdminProducts from './pages/admin/Products';
 import AddProduct from './pages/admin/AddProduct';
 import EditProduct from './pages/admin/EditProduct';
 import Categories from './pages/admin/Categories';
+import AdminAnalytics from './pages/admin/Analytics';
 
 const PublicLayout = () => (
   <div className="flex flex-col min-h-screen bg-ivory-white selection:bg-premium-gold/30 selection:text-forest-green pt-[90px]">
@@ -91,6 +92,7 @@ function App() {
               </Route>
 
               {/* === Admin Routes Wrapper === */}
+              {/* === Admin Routes Wrapper === */}
               <Route 
                 path="/admin" 
                 element={
@@ -104,10 +106,14 @@ function App() {
                 <Route path="products/new" element={<AddProduct />} />
                 <Route path="products/edit/:id" element={<EditProduct />} />
                 <Route path="categories" element={<Categories />} />
+                
                 {/* Placeholders for future use */}
                 <Route path="orders" element={<div className="p-8">Orders coming soon</div>} />
                 <Route path="customers" element={<div className="p-8">Customers coming soon</div>} />
-                <Route path="analytics" element={<div className="p-8">Analytics coming soon</div>} />
+                
+                {/* 👇 CHANGE THIS LINE 👇 */}
+                <Route path="analytics" element={<AdminAnalytics />} /> 
+                
                 <Route path="settings" element={<div className="p-8">Settings coming soon</div>} />
               </Route>
               
