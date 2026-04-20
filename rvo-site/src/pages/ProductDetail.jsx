@@ -57,18 +57,30 @@ const ProductDetail = () => {
 
   if (!product) return null;
 
-  // Assuming product.image is a comma separated string or single image for now
-  // We'll mock extra images if only one is available for layout purposes
-  const images = [
-    product.image,
-    'https://images.unsplash.com/photo-1584305581177-84bc3623fa55?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1620330925769-d4cbae08c5c7?auto=format&fit=crop&w=800&q=80'
-  ];
+  let mainImage = product.image;
+  let gallery = [];
+
+  try {
+    if (product.gallery) {
+      gallery =
+        typeof product.gallery === 'string'
+          ? JSON.parse(product.gallery)
+          : product.gallery;
+    }
+  } catch (e) {
+    console.error('Gallery parse error', e);
+  }
+
+  gallery = gallery.filter(Boolean).filter(img => img !== mainImage);
+  const images = [mainImage, ...gallery].filter(Boolean);
 
   return (
-    <div className="section-padding py-24 pt-32 bg-ivory-white min-h-screen">
-      <div className="flex flex-col lg:flex-row gap-16 mb-20">
+    <div className="bg-ivory-white min-h-screen">
+      {/* Spacer for fixed navbar */}
+      <div className="h-24 md:h-32"></div>
+      
+      <div className="section-padding pb-24 pt-0">
+        <div className="flex flex-col lg:flex-row gap-16 mb-20">
         <div className="w-full lg:w-1/2 flex flex-col-reverse md:flex-row gap-4">
           <div className="flex md:flex-col gap-4 overflow-x-auto md:w-24 flex-shrink-0 hide-scrollbar">
             {images.map((img, idx) => (
@@ -102,7 +114,7 @@ const ProductDetail = () => {
           </div>
           
           <p className="text-lg text-forest-green/80 mb-6 leading-relaxed">
-            {product.description || 'A beautiful, durable everyday carry engineered from completely upcycled materials.'}
+            {product.short_description || product.description || 'A beautiful, durable everyday carry engineered from completely upcycled materials.'}
           </p>
 
           <div className="bg-forest-green/5 p-4 rounded-lg flex items-center space-x-4 mb-8 border border-forest-green/10">
@@ -113,9 +125,23 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          <div className="mb-8">
-            <div className="font-semibold text-forest-green mb-2">Material:</div>
-            <div className="text-forest-green/80">{product.material || 'Recycled thick canvas cotton & upcycled denim lining.'}</div>
+          <div className="mb-8 grid grid-cols-2 gap-4">
+            <div>
+              <div className="font-semibold text-forest-green mb-1">Material:</div>
+              <div className="text-forest-green/80">{product.material || 'Recycled canvas & upcycled denim'}</div>
+            </div>
+            {product.weight && (
+              <div>
+                <div className="font-semibold text-forest-green mb-1">Weight:</div>
+                <div className="text-forest-green/80">{product.weight}</div>
+              </div>
+            )}
+            {product.color && (
+              <div>
+                <div className="font-semibold text-forest-green mb-1">Color:</div>
+                <div className="text-forest-green/80">{product.color}</div>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-8 border-t border-forest-green/10 pt-8">
@@ -132,9 +158,11 @@ const ProductDetail = () => {
             </div>
 
             <button 
-              onClick={() => {
-                addToCart(product, quantity);
-                toast.success('Added to Cart');
+              onClick={async () => {
+                const success = await addToCart(product, quantity);
+                if (success) {
+                  toast.success('Added to Cart');
+                }
               }}
               className="flex-grow flex items-center justify-center space-x-2 bg-white border border-forest-green text-forest-green px-8 py-3 rounded-full hover:bg-forest-green/5 hover:-translate-y-1 transition-all"
             >
@@ -151,9 +179,11 @@ const ProductDetail = () => {
 
           <button 
             className="w-full premium-btn text-lg py-4 mb-10"
-            onClick={() => {
-              addToCart(product, quantity);
-              navigate('/checkout');
+            onClick={async () => {
+              const success = await addToCart(product, quantity);
+              if (success) {
+                navigate('/checkout');
+              }
             }}
           >
             Buy Now
@@ -221,6 +251,7 @@ const ProductDetail = () => {
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

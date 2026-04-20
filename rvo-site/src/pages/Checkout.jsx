@@ -90,40 +90,48 @@ const Checkout = () => {
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   return (
-    <div className="section-padding py-32 bg-ivory-white min-h-screen">
-      <div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-12">
-        <div className="flex-grow">
+    <div className="bg-ivory-white min-h-screen">
+      {/* Spacer for fixed navbar */}
+      <div className="h-32 md:h-40"></div>
+      
+      <div className="section-padding pb-32 pt-0">
+        <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-serif text-forest-green mb-8">Checkout</h1>
-          <form id="checkout-form" onSubmit={handleCheckout} className="space-y-6 bg-white p-8 rounded-2xl border border-forest-green/5 shadow-sm">
-            <h3 className="text-xl font-serif text-forest-green mb-4">Shipping Details</h3>
-            <div className="grid grid-cols-2 gap-4">
-               <div>
-                  <label className="block text-sm text-forest-green mb-1">First Name</label>
-                  <input name="firstName" value={formData.firstName} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold" />
-               </div>
-               <div>
-                  <label className="block text-sm text-forest-green mb-1">Last Name</label>
-                  <input name="lastName" value={formData.lastName} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold" />
-               </div>
-               <div className="col-span-2">
-                  <label className="block text-sm text-forest-green mb-1">Address</label>
-                  <input name="address" value={formData.address} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold" />
-               </div>
+          
+          <div className="flex flex-col md:flex-row gap-12">
+            <div className="flex-grow">
+              <form id="checkout-form" onSubmit={handleCheckout} className="space-y-6 bg-white p-8 rounded-2xl border border-forest-green/5 shadow-sm">
+                <h3 className="text-xl font-serif text-forest-green mb-4">Shipping Details</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-forest-green mb-1">First Name</label>
+                    <input name="firstName" value={formData.firstName} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold" />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-forest-green mb-1">Last Name</label>
+                    <input name="lastName" value={formData.lastName} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold" />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-sm text-forest-green mb-1">Address</label>
+                    <input name="address" value={formData.address} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold" />
+                  </div>
+                </div>
+              </form>
             </div>
-          </form>
-        </div>
 
-        <div className="w-full md:w-80 flex-shrink-0">
-          <div className="bg-white p-6 rounded-2xl border border-forest-green/5 shadow-sm sticky top-32">
-            <h3 className="text-xl font-serif text-forest-green mb-6">Order Summary</h3>
-            <div className="space-y-4 mb-6">
-               <div className="flex justify-between items-center"><span className="text-forest-green/70">Subtotal</span><span className="font-semibold text-forest-green">₹{subtotal}</span></div>
-               <div className="flex justify-between items-center"><span className="text-forest-green/70">Shipping</span><span className="font-semibold text-forest-green">{shipping === 0 ? 'Free' : `₹${shipping}`}</span></div>
-               <div className="pt-4 border-t border-gray-100 flex justify-between items-center"><span className="text-lg font-serif text-forest-green">Total</span><span className="text-xl font-sans font-bold text-premium-gold">₹{total}</span></div>
+            <div className="w-full md:w-80 flex-shrink-0">
+              <div className="bg-white p-6 rounded-2xl border border-forest-green/5 shadow-sm sticky top-40 z-10">
+                <h3 className="text-xl font-serif text-forest-green mb-6">Order Summary</h3>
+                <div className="space-y-4 mb-6">
+                  <div className="flex justify-between items-center"><span className="text-forest-green/70">Subtotal</span><span className="font-semibold text-forest-green">₹{subtotal}</span></div>
+                  <div className="flex justify-between items-center"><span className="text-forest-green/70">Shipping</span><span className="font-semibold text-forest-green">{shipping === 0 ? 'Free' : `₹${shipping}`}</span></div>
+                  <div className="pt-4 border-t border-gray-100 flex justify-between items-center"><span className="text-lg font-serif text-forest-green">Total</span><span className="text-xl font-sans font-bold text-premium-gold">₹{total}</span></div>
+                </div>
+                <button form="checkout-form" type="submit" disabled={isProcessing} className={`w-full premium-btn py-3 flex items-center justify-center ${isProcessing ? 'opacity-70 cursor-not-allowed' : ''}`}>
+                  {isProcessing ? 'Initializing Secure Payment...' : 'Pay Now'}
+                </button>
+              </div>
             </div>
-            <button form="checkout-form" type="submit" disabled={isProcessing} className={`w-full premium-btn py-3 flex items-center justify-center ${isProcessing ? 'opacity-70 cursor-not-allowed' : ''}`}>
-              {isProcessing ? 'Initializing Secure Payment...' : 'Pay Now'}
-            </button>
           </div>
         </div>
       </div>
