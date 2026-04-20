@@ -79,7 +79,7 @@ const Home = () => {
 
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }} className="relative h-500px w-full hidden lg:block rounded-2xl overflow-hidden shadow-2xl border-4 border-premium-gold/30">
             <div className="absolute inset-0 bg-forest-green/10 mix-blend-multiply z-10"></div>
-            <img src="https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Premium Eco Tote Bag" className="w-full h-full object-cover" />
+            <img src="/Product/PatchWork ToteBag front.png" alt="Premium Eco Tote Bag" className="w-full h-full object-cover" />
           </motion.div>
         </div>
       </section>
@@ -93,11 +93,9 @@ const Home = () => {
 
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[
-            { title: "Designer Tote Bags", img: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&h=400&q=80" },
-            { title: "Yoga Mat Covers", img: "https://images.unsplash.com/photo-1601121840801-44eb1c9676e1?auto=format&fit=crop&h=400&q=80" },
-            { title: "Bottle Covers", img: "https://images.unsplash.com/photo-1620330925769-d4cbae08c5c7?auto=format&fit=crop&h=400&q=80" },
-            { title: "Tiffin Covers", img: "https://images.unsplash.com/photo-1584916201218-f4242ceb4809?auto=format&fit=crop&h=400&q=80" },
-            { title: "Custom Accessories", img: "https://images.unsplash.com/photo-1584305581177-84bc3623fa55?auto=format&fit=crop&h=400&q=80" }
+            { title: "Designer Tote Bags", img: "/Product/tote 2 front.png" },
+            { title: "Yoga Mat Covers", img: "/Product/yoga mat 2 front.png" },
+            { title: "Custom Accessories", img: "/Product/laptop front.png" }
           ].map((cat, i) => (
             <motion.div variants={fadeInUp} key={i} className={i === 3 ? 'lg:col-span-2' : ''}>
               <Link to="/products" className="group block relative overflow-hidden rounded-xl h-80">
@@ -164,8 +162,8 @@ const Home = () => {
       {/* Brand Story */}
       <section className="section-padding py-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div className="relative h-600px rounded-2xl overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=800&q=80" alt="Artisan making bag" className="absolute inset-0 w-full h-full object-cover" />
+          <div className="relative h-[600px] rounded-2xl overflow-hidden">
+            <img src="/Product/our story.jpg" alt="Artisan making bag" className="absolute inset-0 w-full h-full object-cover" />
             <div className="absolute inset-0 border-8 border-ivory-white rounded-2xl z-10 m-4 pointer-events-none mix-blend-overlay"></div>
           </div>
           <div>

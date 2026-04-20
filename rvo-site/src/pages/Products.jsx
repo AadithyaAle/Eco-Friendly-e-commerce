@@ -178,7 +178,7 @@ const Products = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
                   key={product.id} 
-                  className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group border border-forest-green/5 relative flex flex-col"
+                  className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl  hover:-translate-y-2 transition-all duration-300 group border border-forest-green/5 relative flex flex-col"
                 >
                   <Link to={`/product/${product.id}`} className="block relative h-72 overflow-hidden bg-gray-50 shrink-0">
                     <img 
