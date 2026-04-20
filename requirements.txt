@@ -19,3 +19,7 @@ httpx==0.24.1
 # Security
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+
+#telegram bot
+pyTelegramBotAPI
+python-dotenv
