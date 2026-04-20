@@ -42,7 +42,11 @@ import AddProduct from './pages/admin/AddProduct';
 import EditProduct from './pages/admin/EditProduct';
 import Categories from './pages/admin/Categories';
 import AdminAnalytics from './pages/admin/Analytics';
+import AdminOrders from './pages/admin/Orders';
 
+import { FaTelegram } from 'react-icons/fa';
+
+// ✅ SINGLE ScrollToTop (fixed)
 const ScrollToTop = () => {
   const { pathname } = useLocation();
 
@@ -53,14 +57,28 @@ const ScrollToTop = () => {
   return null;
 };
 
+// ✅ CLEAN merged layout (fixed)
 const PublicLayout = () => (
-  <div className="flex flex-col min-h-screen bg-ivory-white selection:bg-premium-gold/30 selection:text-forest-green pt-[90px]">
+  <div className="flex flex-col min-h-screen bg-ivory-white selection:bg-premium-gold/30 selection:text-forest-green pt-[90px] relative">
     <ScrollToTop />
     <Navbar />
     <main className="flex-grow">
       <Outlet />
     </main>
     <Footer />
+    
+    <a 
+      href="https://t.me/" 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="fixed bottom-6 right-6 z-50 bg-[#0088cc] hover:bg-[#0077b5] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex items-center justify-center"
+      aria-label="Contact us on Telegram"
+    >
+      <FaTelegram className="text-3xl" />
+      <span className="absolute right-full mr-4 px-3 py-1.5 bg-gray-900 text-white text-sm font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+        Chat with Support
+      </span>
+    </a>
   </div>
 );
 
@@ -72,18 +90,17 @@ function App() {
           <WishlistProvider>
             
             <Toaster 
-                position="bottom-right" 
-                toastOptions={{
-                  style: {
-                    background: '#1F4D36',
-                    color: '#FAF9F6',
-                    border: '1px solid #C8A96B'
-                  }
-                }} 
+              position="bottom-right" 
+              toastOptions={{
+                style: {
+                  background: '#1F4D36',
+                  color: '#FAF9F6',
+                  border: '1px solid #C8A96B'
+                }
+              }} 
             />
 
             <Routes>
-              {/* === Public Routes Wrapper === */}
               <Route element={<PublicLayout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/products" element={<Products />} />
@@ -95,12 +112,10 @@ function App() {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/policies" element={<Policies />} />
                 
-                {/* Auth Routes */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
 
-                {/* Protected Client Routes */}
                 <Route 
                   path="/profile" 
                   element={<ProtectedRoute><Profile /></ProtectedRoute>} 
@@ -111,8 +126,6 @@ function App() {
                 />
               </Route>
 
-              {/* === Admin Routes Wrapper === */}
-              {/* === Admin Routes Wrapper === */}
               <Route 
                 path="/admin" 
                 element={
@@ -126,17 +139,11 @@ function App() {
                 <Route path="products/new" element={<AddProduct />} />
                 <Route path="products/edit/:id" element={<EditProduct />} />
                 <Route path="categories" element={<Categories />} />
-                
-                {/* Placeholders for future use */}
-                <Route path="orders" element={<div className="p-8">Orders coming soon</div>} />
+                <Route path="orders" element={<AdminOrders />} />
                 <Route path="customers" element={<div className="p-8">Customers coming soon</div>} />
-                
-                {/* 👇 CHANGE THIS LINE 👇 */}
                 <Route path="analytics" element={<AdminAnalytics />} /> 
-                
                 <Route path="settings" element={<div className="p-8">Settings coming soon</div>} />
               </Route>
-              
             </Routes>
 
           </WishlistProvider>
