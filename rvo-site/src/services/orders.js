@@ -37,6 +37,27 @@ export const createOrder = async (userId, cartItems, total, shippingAddress, pay
     throw itemsErr;
   }
 
+  // 3. Update the stock for each product
+  for (const item of cartItems) {
+    const productId = item.product_id || item.id;
+    const qtyOrdered = item.qty;
+
+    // Fetch current stock
+    const { data: productData, error: productErr } = await supabase
+      .from('products')
+      .select('stock')
+      .eq('id', productId)
+      .single();
+
+    if (productData && !productErr) {
+      const newStock = Math.max(0, productData.stock - qtyOrdered);
+      await supabase
+        .from('products')
+        .update({ stock: newStock })
+        .eq('id', productId);
+    }
+  }
+
   return order;
 };
 
