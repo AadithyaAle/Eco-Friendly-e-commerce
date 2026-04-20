@@ -59,7 +59,8 @@ const ScrollToTop = () => {
 };
 
 // ✅ CLEAN merged layout (fixed)
-const PublicLayout = () => (
+// ✅ Update this component to take the botLink prop
+const PublicLayout = ({ botLink }) => (
   <div className="flex flex-col min-h-screen bg-ivory-white selection:bg-premium-gold/30 selection:text-forest-green pt-[90px] relative">
     <ScrollToTop />
     <Navbar />
@@ -69,7 +70,7 @@ const PublicLayout = () => (
     <Footer />
     
     <a 
-      href="https://t.me/" 
+      href={botLink} // 👈 Use the variable here!
       target="_blank" 
       rel="noopener noreferrer"
       className="fixed bottom-6 right-6 z-50 bg-[#0088cc] hover:bg-[#0077b5] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex items-center justify-center"
@@ -84,6 +85,9 @@ const PublicLayout = () => (
 );
 
 function App() {
+  // Inside App.jsx, above the return statement
+  const telegramBotHandle = "@ecoecombot"; // Replace with your actual bot username
+  const telegramLink = `https://t.me/ecoecombot`;
   return (
     <ProductProvider>
       <AuthProvider>
@@ -102,8 +106,8 @@ function App() {
             />
 
             <Routes>
-              <Route element={<PublicLayout />}>
-                <Route path="/" element={<Home />} />
+              <Route element={<PublicLayout botLink={telegramLink} />}>
+              <Route path="/" element={<Home />} />
                 <Route path="/products" element={<Products />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/cart" element={<Cart />} />
