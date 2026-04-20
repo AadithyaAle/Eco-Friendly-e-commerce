@@ -12,7 +12,7 @@ const Analytics = () => {
       // Fetch all confirmed orders with their amounts and dates
       const { data: orders, error } = await supabase
         .from('orders')
-        .select('total_amount, created_at'); 
+        .select('amount, created_at'); 
         // Add .eq('status', 'Confirmed') if needed
 
       if (orders && !error) {
@@ -24,7 +24,7 @@ const Analytics = () => {
           if (!acc[month]) {
             acc[month] = { name: month, revenue: 0, orders: 0 };
           }
-          acc[month].revenue += (order.total_amount || 0);
+          acc[month].revenue += (order.amount || 0);
           acc[month].orders += 1;
           return acc;
         }, {});

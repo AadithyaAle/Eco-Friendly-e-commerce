@@ -4,7 +4,7 @@ export const getLiveRevenueData = async () => {
   // Fetch all confirmed orders
   const { data, error } = await supabase
     .from('orders')
-    .select('created_at, total_amount')
+    .select('created_at, amount')
     .eq('status', 'Confirmed')
     .order('created_at', { ascending: true });
 
@@ -18,7 +18,7 @@ export const getLiveRevenueData = async () => {
       acc[month] = { name: month, revenue: 0, orders: 0 };
     }
     
-    acc[month].revenue += order.total_amount;
+    acc[month].revenue += order.amount;
     acc[month].orders += 1;
     
     return acc;

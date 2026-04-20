@@ -26,7 +26,7 @@ const Dashboard = () => {
       ] = await Promise.all([
         supabase.from('products').select('stock, active'),
         // Fetch created_at to plot time-series data
-        supabase.from('orders').select('total_amount, created_at') 
+        supabase.from('orders').select('amount, created_at') 
       ]);
       
       let newStats = {
@@ -41,7 +41,7 @@ const Dashboard = () => {
 
       if (orders) {
         newStats.totalOrders = orders.length;
-        newStats.totalRevenue = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+        newStats.totalRevenue = orders.reduce((sum, order) => sum + (order.amount || 0), 0);
 
         // --- PIPELINE 2: Process data for the chart (Group by Month) ---
         const revenueByMonth = orders.reduce((acc, order) => {
@@ -52,7 +52,7 @@ const Dashboard = () => {
           if (!acc[month]) {
             acc[month] = { name: month, revenue: 0 };
           }
-          acc[month].revenue += (order.total_amount || 0);
+          acc[month].revenue += (order.amount || 0);
           return acc;
         }, {});
 
