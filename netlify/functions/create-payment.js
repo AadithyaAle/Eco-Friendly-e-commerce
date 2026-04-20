@@ -1,5 +1,3 @@
-
-
 const Razorpay = require('razorpay');
 
 exports.handler = async (event) => {
@@ -11,15 +9,20 @@ exports.handler = async (event) => {
         console.log("1. Amount Requested:", body.amount);
         
         console.log("2. Checking API Keys...");
-        if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+        
+        // 🔥 THE BRIDGE LOGIC 🔥
+        const keyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID;
+        const keySecret = process.env.RAZORPAY_KEY_SECRET || process.env.VITE_RAZORPAY_KEY_SECRET;
+
+        if (!keyId || !keySecret) {
             console.error("❌ ERROR: Missing Razorpay Keys in root .env file!");
             throw new Error("Missing API Keys");
         }
         console.log("✅ API Keys found.");
 
         const razorpay = new Razorpay({
-            key_id: process.env.RAZORPAY_KEY_ID,
-            key_secret: process.env.RAZORPAY_KEY_SECRET,
+            key_id: keyId,
+            key_secret: keySecret,
         });
 
         console.log("3. Asking Razorpay for Order ID...");

@@ -43,6 +43,7 @@ import EditProduct from './pages/admin/EditProduct';
 import Categories from './pages/admin/Categories';
 import AdminAnalytics from './pages/admin/Analytics';
 import AdminOrders from './pages/admin/Orders';
+import AdminSettings from './pages/admin/Settings';
 
 import { FaTelegram } from 'react-icons/fa';
 
@@ -143,6 +144,8 @@ function App() {
                 <Route path="customers" element={<div className="p-8">Customers coming soon</div>} />
                 <Route path="analytics" element={<AdminAnalytics />} /> 
                 <Route path="settings" element={<div className="p-8">Settings coming soon</div>} />
+                
+                <Route path="settings" element={<AdminSettings />} />
               </Route>
             </Routes>
 
