@@ -2,10 +2,15 @@
   "name": "ecom-backend-fastapi",
   "version": "1.0.0",
   "scripts": {
-  "dev": "npm run dev --prefix rvo-site"
+    "dev": "npm run dev --prefix rvo-site"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
     "razorpay": "^2.9.2"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.10",
+    "tailwindcss": "^4.2.2"
   }
 }
