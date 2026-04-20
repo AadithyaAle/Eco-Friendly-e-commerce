@@ -44,10 +44,14 @@ const Cart = () => {
   }
 
   return (
-    <div className="section-padding py-24 pt-48 bg-ivory-white min-h-screen">
-      <h1 className="text-4xl font-serif text-forest-green mb-10 border-b border-forest-green/10 pb-6">Your Cart ({cartItems.length})</h1>
+    <div className="bg-ivory-white min-h-screen">
+      {/* Spacer for fixed navbar */}
+      <div className="h-32 md:h-40"></div>
       
-      <div className="flex flex-col lg:flex-row gap-12">
+      <div className="section-padding pb-32 pt-0">
+        <h1 className="text-4xl font-serif text-forest-green mb-10 border-b border-forest-green/10 pb-6">Your Cart ({cartItems.length})</h1>
+        
+        <div className="flex flex-col lg:flex-row gap-12">
         {/* Cart Items */}
         <div className="flex-grow space-y-6">
           {cartItems.map((item, idx) => (
@@ -67,7 +71,7 @@ const Cart = () => {
                 <div className="text-sm text-forest-green/60 mb-4">Eco-friendly Selection</div>
                 
                 <div className="flex justify-between items-center w-full">
-                  <div className="font-sans font-semibold text-lg text-forest-green">₹{item.price * item.qty}</div>
+                  <div className="font-sans font-semibold text-lg text-forest-green">₹{item.price}</div>
                   
                   <div className="flex items-center space-x-1 sm:space-x-4">
                     <div className="flex items-center border border-forest-green/20 rounded-full">
@@ -88,7 +92,7 @@ const Cart = () => {
 
         {/* Order Summary */}
         <div className="w-full lg:w-96 flex-shrink-0">
-          <div className="bg-white p-8 rounded-2xl border border-forest-green/5 shadow-sm sticky top-32">
+          <div className="bg-white p-8 rounded-2xl border border-forest-green/5 shadow-sm sticky top-40 z-10">
             <h2 className="text-2xl font-serif text-forest-green mb-6 border-b border-gray-100 pb-4">Order Summary</h2>
             
             <div className="space-y-4 text-forest-green/80 mb-6">
@@ -132,6 +136,7 @@ const Cart = () => {
               <span>Checkout</span> <FiArrowRight />
             </button>
           </div>
+        </div>
         </div>
       </div>
     </div>

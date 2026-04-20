@@ -64,12 +64,7 @@ const ProductDetail = () => {
 
   if (!product) return null;
 
-  // =========================
-  // IMAGE HANDLING (MAIN + GALLERY)
-  // =========================
-
   let mainImage = product.image;
-
   let gallery = [];
 
   try {
@@ -84,33 +79,26 @@ const ProductDetail = () => {
   }
 
   gallery = gallery.filter(Boolean).filter(img => img !== mainImage);
-
   const images = [mainImage, ...gallery].filter(Boolean);
-
-  // =========================
-  // PRICE LOGIC
-  // =========================
 
   const hasDiscount =
     product.discount_price &&
     product.discount_price < product.price;
 
   return (
-    <div className="py-24 pt-32 bg-white min-h-screen">
+    <div className="bg-ivory-white min-h-screen">
+      <div className="h-24 md:h-32"></div>
+
       <div className="max-w-7xl mx-auto px-6 flex flex-col lg:flex-row gap-12">
 
-        {/* =========================
-            LEFT: IMAGE SECTION
-        ========================= */}
+        {/* LEFT: IMAGES */}
         <div className="w-full lg:w-1/2 flex flex-col-reverse md:flex-row gap-4">
-
-          {/* thumbnails */}
           <div className="flex md:flex-col gap-3 overflow-x-auto md:w-24">
             {images.map((img, i) => (
               <button
                 key={i}
                 onClick={() => setActiveImage(i)}
-                className={`w-20 h-24 md:w-full md:h-28 rounded-lg overflow-hidden border-2 transition ${
+                className={`w-20 h-24 md:w-full md:h-28 rounded-lg overflow-hidden border-2 ${
                   activeImage === i
                     ? 'border-black'
                     : 'border-transparent opacity-60'
@@ -121,7 +109,6 @@ const ProductDetail = () => {
             ))}
           </div>
 
-          {/* main image */}
           <div className="flex-1 h-[500px] bg-gray-50 rounded-xl overflow-hidden">
             <img
               src={images[activeImage]}
@@ -130,26 +117,21 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* =========================
-            RIGHT: DETAILS
-        ========================= */}
+        {/* RIGHT: DETAILS */}
         <div className="w-full lg:w-1/2">
 
-          {/* category */}
           <p className="uppercase text-sm tracking-widest text-gray-500">
             {product.category}
           </p>
 
-          {/* name */}
           <h1 className="text-4xl font-semibold mt-2">
             {product.name}
           </h1>
 
-          {/* price */}
           <div className="mt-4 flex items-center gap-3">
             {hasDiscount ? (
               <>
-                <span className="text-2xl font-bold text-black">
+                <span className="text-2xl font-bold">
                   ₹{product.discount_price}
                 </span>
                 <span className="line-through text-gray-400">
@@ -163,25 +145,21 @@ const ProductDetail = () => {
             )}
           </div>
 
-          {/* short description */}
           <p className="mt-4 text-gray-600">
             {product.short_description}
           </p>
 
-          {/* eco / highlight */}
           <div className="mt-6 p-4 bg-gray-50 rounded-lg flex items-center gap-3">
             <FiRefreshCcw />
             <span>{product.eco_score || 'Eco-friendly product'}</span>
           </div>
 
-          {/* attributes */}
           <div className="mt-6 space-y-2 text-gray-700">
             <p><strong>Material:</strong> {product.material}</p>
             <p><strong>Weight:</strong> {product.weight}</p>
             <p><strong>Color:</strong> {product.color}</p>
           </div>
 
-          {/* quantity */}
           <div className="mt-6 flex items-center gap-4">
             <div className="flex items-center border rounded-full px-3">
               <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>
@@ -194,7 +172,6 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          {/* actions */}
           <div className="mt-6 flex gap-3">
             <button
               onClick={() => {
@@ -210,17 +187,10 @@ const ProductDetail = () => {
               onClick={() => toggleWishlist(product)}
               className="px-4 border rounded-lg"
             >
-              <FiHeart
-                className={
-                  isInWishlist(product.id)
-                    ? 'text-red-500'
-                    : ''
-                }
-              />
+              <FiHeart className={isInWishlist(product.id) ? 'text-red-500' : ''} />
             </button>
           </div>
 
-          {/* buy now */}
           <button
             onClick={() => {
               addToCart(product, quantity);
@@ -231,8 +201,7 @@ const ProductDetail = () => {
             Buy Now
           </button>
 
-          {/* shipping info */}
-          <div className="mt-8 grid grid-cols-1 gap-3 text-sm text-gray-600">
+          <div className="mt-8 grid gap-3 text-sm text-gray-600">
             <p><FiTruck className="inline mr-2" /> Free shipping over ₹999</p>
             <p><FiRefreshCcw className="inline mr-2" /> 7 day return policy</p>
             <p><FiShield className="inline mr-2" /> 6 month warranty</p>
@@ -240,9 +209,7 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* =========================
-          TABS SECTION
-      ========================= */}
+      {/* TABS */}
       <div className="max-w-5xl mx-auto mt-16 px-6">
         <div className="flex gap-6 border-b">
           {['description', 'shipping', 'care'].map(tab => (
@@ -260,23 +227,15 @@ const ProductDetail = () => {
           ))}
         </div>
 
-        <div className="mt-6 text-gray-700 leading-relaxed">
+        <div className="mt-6 text-gray-700">
           {activeTab === 'description' && (
-            <p>
-              {product.full_description || product.short_description}
-            </p>
+            <p>{product.full_description || product.short_description}</p>
           )}
-
           {activeTab === 'shipping' && (
-            <p>
-              Shipping across India in 3–5 days. International shipping available.
-            </p>
+            <p>Shipping across India in 3–5 days.</p>
           )}
-
           {activeTab === 'care' && (
-            <p>
-              {product.care_instructions || 'Handle with care. Do not machine wash.'}
-            </p>
+            <p>{product.care_instructions || 'Handle with care.'}</p>
           )}
         </div>
       </div>

@@ -46,6 +46,7 @@ import AdminOrders from './pages/admin/Orders';
 
 import { FaTelegram } from 'react-icons/fa';
 
+// ✅ SINGLE ScrollToTop (fixed)
 const ScrollToTop = () => {
   const { pathname } = useLocation();
 
@@ -56,6 +57,7 @@ const ScrollToTop = () => {
   return null;
 };
 
+// ✅ CLEAN merged layout (fixed)
 const PublicLayout = () => (
   <div className="flex flex-col min-h-screen bg-ivory-white selection:bg-premium-gold/30 selection:text-forest-green pt-[90px] relative">
     <ScrollToTop />
@@ -65,7 +67,6 @@ const PublicLayout = () => (
     </main>
     <Footer />
     
-    {/* Telegram Floating Action Button */}
     <a 
       href="https://t.me/" 
       target="_blank" 
@@ -100,7 +101,6 @@ function App() {
             />
 
             <Routes>
-              {/* === Public Routes Wrapper === */}
               <Route element={<PublicLayout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/products" element={<Products />} />
@@ -112,12 +112,10 @@ function App() {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/policies" element={<Policies />} />
                 
-                {/* Auth Routes */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
 
-                {/* Protected Client Routes */}
                 <Route 
                   path="/profile" 
                   element={<ProtectedRoute><Profile /></ProtectedRoute>} 
@@ -128,7 +126,6 @@ function App() {
                 />
               </Route>
 
-              {/* === Admin Routes Wrapper === */}
               <Route 
                 path="/admin" 
                 element={
@@ -142,16 +139,11 @@ function App() {
                 <Route path="products/new" element={<AddProduct />} />
                 <Route path="products/edit/:id" element={<EditProduct />} />
                 <Route path="categories" element={<Categories />} />
-                
-                {/* Admin Orders */}
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="customers" element={<div className="p-8">Customers coming soon</div>} />
-                
                 <Route path="analytics" element={<AdminAnalytics />} /> 
-                
                 <Route path="settings" element={<div className="p-8">Settings coming soon</div>} />
               </Route>
-              
             </Routes>
 
           </WishlistProvider>

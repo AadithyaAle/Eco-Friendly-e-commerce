@@ -92,7 +92,7 @@ const Profile = () => {
                     </div>
                     <div className="border-t border-gray-100 pt-4 flex gap-4 overflow-x-auto hide-scrollbar">
                        {order.order_items?.map(item => (
-                         <div key={item.id} className="flex-shrink-0 w-16 h-16 rounded-lg bg-gray-50 overflow-hidden border border-gray-100" title={item.product?.name}>
+                         <div key={item.id} className="shrink-0 w-16 h-16 rounded-lg bg-gray-50 overflow-hidden border border-gray-100" title={item.product?.name}>
                            <img src={item.product?.image} alt="product" className="w-full h-full object-cover" />
                          </div>
                        ))}
