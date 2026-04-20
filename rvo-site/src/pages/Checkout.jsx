@@ -50,14 +50,9 @@ const Checkout = () => {
     setIsProcessing(true);
 
     try {
-      // 🔥 1. GET SUPABASE AUTH USER (FIX FOR UUID ISSUE)
-      const {
-        data: { user },
-        error: authError
-      } = await supabase.auth.getUser();
-
-      if (authError || !user) {
-        toast.error("Please login again");
+      // 🔥 1. CHECK FIREBASE AUTH USER
+      if (!currentUser) {
+        toast.error("Please login to checkout");
         setIsProcessing(false);
         return;
       }
@@ -119,9 +114,9 @@ const Checkout = () => {
               address: formData.address
             };
 
-            // 🔥 7. CREATE ORDER IN SUPABASE (FIXED UUID)
+            // 🔥 7. CREATE ORDER IN SUPABASE
             await createOrder(
-              user.id, // 🔥 THIS FIXES YOUR UUID ERROR
+              currentUser.uid, // Use Firebase UID
               cartItems,
               total,
               shippingAddress,
@@ -146,7 +141,7 @@ const Checkout = () => {
 
         prefill: {
           name: `${formData.firstName} ${formData.lastName}`,
-          email: user.email || ""
+          email: currentUser?.email || ""
         },
 
         theme: {
