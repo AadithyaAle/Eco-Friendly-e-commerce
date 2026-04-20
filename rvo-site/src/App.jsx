@@ -36,14 +36,32 @@ import AddProduct from './pages/admin/AddProduct';
 import EditProduct from './pages/admin/EditProduct';
 import Categories from './pages/admin/Categories';
 import AdminAnalytics from './pages/admin/Analytics';
+import AdminOrders from './pages/admin/Orders';
+
+import { FaTelegram } from 'react-icons/fa';
 
 const PublicLayout = () => (
-  <div className="flex flex-col min-h-screen bg-ivory-white selection:bg-premium-gold/30 selection:text-forest-green pt-[90px]">
+  <div className="flex flex-col min-h-screen bg-ivory-white selection:bg-premium-gold/30 selection:text-forest-green pt-[90px] relative">
     <Navbar />
     <main className="flex-grow">
       <Outlet />
     </main>
     <Footer />
+    
+    {/* Telegram Floating Action Button */}
+    <a 
+      href="https://t.me/" 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="fixed bottom-6 right-6 z-50 bg-[#0088cc] hover:bg-[#0077b5] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex items-center justify-center"
+      aria-label="Contact us on Telegram"
+    >
+      <FaTelegram className="text-3xl" />
+      {/* Optional tooltip */}
+      <span className="absolute right-full mr-4 px-3 py-1.5 bg-gray-900 text-white text-sm font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+        Chat with Support
+      </span>
+    </a>
   </div>
 );
 
@@ -107,8 +125,8 @@ function App() {
                 <Route path="products/edit/:id" element={<EditProduct />} />
                 <Route path="categories" element={<Categories />} />
                 
-                {/* Placeholders for future use */}
-                <Route path="orders" element={<div className="p-8">Orders coming soon</div>} />
+                {/* Admin Orders */}
+                <Route path="orders" element={<AdminOrders />} />
                 <Route path="customers" element={<div className="p-8">Customers coming soon</div>} />
                 
                 {/* 👇 CHANGE THIS LINE 👇 */}

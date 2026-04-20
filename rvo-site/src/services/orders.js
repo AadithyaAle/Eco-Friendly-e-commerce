@@ -54,3 +54,33 @@ export const getUserOrders = async (userId) => {
   
   return data;
 };
+
+// Admin: Fetch all orders
+export const getAdminOrders = async () => {
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*, order_items(*, product:products(*))')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error("Error fetching admin orders:", error);
+    throw error;
+  }
+  return data;
+};
+
+// Admin: Update order status
+export const updateOrderStatus = async (orderId, status) => {
+  const { data, error } = await supabase
+    .from('orders')
+    .update({ status })
+    .eq('id', orderId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error updating order status:", error);
+    throw error;
+  }
+  return data;
+};
