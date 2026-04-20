@@ -142,9 +142,7 @@ function App() {
                 <Route path="categories" element={<Categories />} />
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="customers" element={<div className="p-8">Customers coming soon</div>} />
-                <Route path="analytics" element={<AdminAnalytics />} /> 
-                <Route path="settings" element={<div className="p-8">Settings coming soon</div>} />
-                
+                <Route path="analytics" element={<AdminAnalytics />} />              
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
             </Routes>
