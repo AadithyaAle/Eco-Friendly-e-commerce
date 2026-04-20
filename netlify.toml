@@ -11,7 +11,7 @@
 
 [functions]
   # Path to your backend logic
-  directory = "netlify/functions"
+  directory = "../netlify/functions"
 
 [dev]
   # Your local development settings
