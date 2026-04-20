@@ -1,4 +1,5 @@
-import { Routes, Route, Outlet } from 'react-router-dom';
+import { Routes, Route, Outlet, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 
 // Contexts
@@ -19,7 +20,12 @@ import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Wishlist from './pages/Wishlist';
 import About from './pages/About';
+import FAQ from './pages/FAQ';
+import Contact from './pages/Contact';
+import Policies from './pages/Policies';
 import Login from './pages/Login';
+
+// Auth Routes
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import Profile from './pages/Profile';
@@ -40,8 +46,19 @@ import AdminOrders from './pages/admin/Orders';
 
 import { FaTelegram } from 'react-icons/fa';
 
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
+
 const PublicLayout = () => (
   <div className="flex flex-col min-h-screen bg-ivory-white selection:bg-premium-gold/30 selection:text-forest-green pt-[90px] relative">
+    <ScrollToTop />
     <Navbar />
     <main className="flex-grow">
       <Outlet />
@@ -57,7 +74,6 @@ const PublicLayout = () => (
       aria-label="Contact us on Telegram"
     >
       <FaTelegram className="text-3xl" />
-      {/* Optional tooltip */}
       <span className="absolute right-full mr-4 px-3 py-1.5 bg-gray-900 text-white text-sm font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
         Chat with Support
       </span>
@@ -73,14 +89,14 @@ function App() {
           <WishlistProvider>
             
             <Toaster 
-                position="bottom-right" 
-                toastOptions={{
-                  style: {
-                    background: '#1F4D36',
-                    color: '#FAF9F6',
-                    border: '1px solid #C8A96B'
-                  }
-                }} 
+              position="bottom-right" 
+              toastOptions={{
+                style: {
+                  background: '#1F4D36',
+                  color: '#FAF9F6',
+                  border: '1px solid #C8A96B'
+                }
+              }} 
             />
 
             <Routes>
@@ -92,6 +108,9 @@ function App() {
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/wishlist" element={<Wishlist />} />
                 <Route path="/about" element={<About />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/policies" element={<Policies />} />
                 
                 {/* Auth Routes */}
                 <Route path="/login" element={<Login />} />
@@ -109,7 +128,6 @@ function App() {
                 />
               </Route>
 
-              {/* === Admin Routes Wrapper === */}
               {/* === Admin Routes Wrapper === */}
               <Route 
                 path="/admin" 
@@ -129,7 +147,6 @@ function App() {
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="customers" element={<div className="p-8">Customers coming soon</div>} />
                 
-                {/* 👇 CHANGE THIS LINE 👇 */}
                 <Route path="analytics" element={<AdminAnalytics />} /> 
                 
                 <Route path="settings" element={<div className="p-8">Settings coming soon</div>} />
