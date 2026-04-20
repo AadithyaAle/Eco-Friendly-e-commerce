@@ -10,20 +10,44 @@ const Checkout = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({ firstName: '', lastName: '', address: '' });
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    address: ''
+  });
+
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const shipping = subtotal > 999 || subtotal === 0 ? 0 : 99;
+  const shipping = subtotal > 999 ? 0 : 99;
   const total = subtotal + shipping;
+
+  const loadRazorpay = () =>
+    new Promise((resolve) => {
+      if (window.Razorpay) return resolve(true);
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
 
   const handleCheckout = async (e) => {
     e.preventDefault();
-    if (cartItems.length === 0) return toast.error("Cart is empty");
-    if (!currentUser) return toast.error("Please login to place an order");
+
+    if (cartItems.length === 0) {
+      toast.error("Cart is empty");
+      return;
+    }
 
     setIsProcessing(true);
+
     try {
-      // 1. Fetch Order ID from Netlify Function
+      if (!currentUser) {
+        toast.error("Please login to checkout");
+        setIsProcessing(false);
+        return;
+      }
+
       const response = await fetch('/.netlify/functions/create-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -31,104 +55,190 @@ const Checkout = () => {
       });
 
       const data = await response.json();
-      if (!response.ok || !data.success) throw new Error('Gateway failed');
 
-      // 2. Setup Razorpay
+      if (!response.ok || !data.success) {
+        throw new Error("Payment gateway error");
+      }
+
+      const loaded = await loadRazorpay();
+
+      if (!loaded || !window.Razorpay) {
+        toast.error("Payment SDK failed to load");
+        setIsProcessing(false);
+        return;
+      }
+
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: data.amount,
         currency: "INR",
         name: "RVO Fabric Essentials",
-        description: "Premium Eco-Friendly Purchase",
+        description: "Eco-Friendly Purchase",
         order_id: data.order_id,
+
         handler: async function (paymentResponse) {
           try {
-            toast.loading("Verifying payment...", { id: "order-toast" });
+            toast.loading("Verifying payment...", { id: "pay" });
 
-            // 3. Verify Signature Securely
-            const verifyRes = await fetch('/.netlify/functions/verify-payment', {
+            const verifyRes = await fetch(
+              '/.netlify/functions/verify-payment',
+              {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(paymentResponse)
-            });
-            const verifyData = await verifyRes.json();
-            
-            if (!verifyData.success) throw new Error("Payment verification failed");
+              }
+            );
 
-            // 4. Save to Database
-            const shippingAddress = { name: `${formData.firstName} ${formData.lastName}`, address: formData.address };
-            await createOrder(currentUser.uid, cartItems, total, shippingAddress, {
-              paymentId: paymentResponse.razorpay_payment_id,
-              status: 'Confirmed'
-            });
-            
-            toast.success("Order Placed Successfully!", { id: "order-toast" });
+            const verifyData = await verifyRes.json();
+
+            if (!verifyData.success) {
+              throw new Error("Payment verification failed");
+            }
+
+            const shippingAddress = {
+              name: `${formData.firstName} ${formData.lastName}`,
+              address: formData.address
+            };
+
+            await createOrder(
+              currentUser.uid,
+              cartItems,
+              total,
+              shippingAddress,
+              {
+                paymentId: paymentResponse.razorpay_payment_id,
+                status: "Confirmed"
+              }
+            );
+
+            toast.success("Order placed successfully!", { id: "pay" });
+
             await clearCart();
-            navigate('/profile'); 
+            navigate("/profile");
+
           } catch (error) {
-            toast.error("Payment successful but database update failed.", { id: "order-toast" });
+            console.error("ORDER ERROR:", error);
+            toast.error("Payment successful but order save failed", {
+              id: "pay"
+            });
           }
         },
+
         prefill: {
           name: `${formData.firstName} ${formData.lastName}`,
-          email: currentUser.email || "",
+          email: currentUser?.email || ""
         },
-        theme: { color: "#1F4D36" }
+
+        theme: {
+          color: "#1F4D36"
+        }
       };
 
       const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', () => toast.error("Payment Failed."));
+
+      rzp.on("payment.failed", () => {
+        toast.error("Payment failed");
+      });
+
       rzp.open();
 
     } catch (error) {
-      toast.error("Failed to connect to gateway.");
+      console.error(error);
+      toast.error("Checkout failed");
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
   return (
     <div className="bg-ivory-white min-h-screen">
-      {/* Spacer for fixed navbar */}
       <div className="h-32 md:h-40"></div>
-      
+
       <div className="section-padding pb-32 pt-0">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-serif text-forest-green mb-8">Checkout</h1>
-          
+          <h1 className="text-4xl font-serif text-forest-green mb-8">
+            Checkout
+          </h1>
+
           <div className="flex flex-col md:flex-row gap-12">
             <div className="flex-grow">
-              <form id="checkout-form" onSubmit={handleCheckout} className="space-y-6 bg-white p-8 rounded-2xl border border-forest-green/5 shadow-sm">
-                <h3 className="text-xl font-serif text-forest-green mb-4">Shipping Details</h3>
+              <form
+                id="checkout-form"
+                onSubmit={handleCheckout}
+                className="space-y-6 bg-white p-8 rounded-2xl border border-forest-green/5 shadow-sm"
+              >
+                <h3 className="text-xl font-serif text-forest-green mb-4">
+                  Shipping Details
+                </h3>
+
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm text-forest-green mb-1">First Name</label>
-                    <input name="firstName" value={formData.firstName} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold" />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-forest-green mb-1">Last Name</label>
-                    <input name="lastName" value={formData.lastName} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold" />
-                  </div>
-                  <div className="col-span-2">
-                    <label className="block text-sm text-forest-green mb-1">Address</label>
-                    <input name="address" value={formData.address} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold" />
-                  </div>
+                  <input
+                    name="firstName"
+                    placeholder="First Name"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold"
+                  />
+
+                  <input
+                    name="lastName"
+                    placeholder="Last Name"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold"
+                  />
+
+                  <input
+                    name="address"
+                    placeholder="Address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    required
+                    className="col-span-2 w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold"
+                  />
                 </div>
               </form>
             </div>
 
             <div className="w-full md:w-80 flex-shrink-0">
               <div className="bg-white p-6 rounded-2xl border border-forest-green/5 shadow-sm sticky top-40 z-10">
-                <h3 className="text-xl font-serif text-forest-green mb-6">Order Summary</h3>
+                <h3 className="text-xl font-serif text-forest-green mb-6">
+                  Order Summary
+                </h3>
+
                 <div className="space-y-4 mb-6">
-                  <div className="flex justify-between items-center"><span className="text-forest-green/70">Subtotal</span><span className="font-semibold text-forest-green">₹{subtotal}</span></div>
-                  <div className="flex justify-between items-center"><span className="text-forest-green/70">Shipping</span><span className="font-semibold text-forest-green">{shipping === 0 ? 'Free' : `₹${shipping}`}</span></div>
-                  <div className="pt-4 border-t border-gray-100 flex justify-between items-center"><span className="text-lg font-serif text-forest-green">Total</span><span className="text-xl font-sans font-bold text-premium-gold">₹{total}</span></div>
+                  <div className="flex justify-between">
+                    <span>Subtotal</span>
+                    <span>₹{subtotal}</span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span>Shipping</span>
+                    <span>{shipping === 0 ? "Free" : `₹${shipping}`}</span>
+                  </div>
+
+                  <div className="border-t pt-4 flex justify-between font-bold">
+                    <span>Total</span>
+                    <span>₹{total}</span>
+                  </div>
                 </div>
-                <button form="checkout-form" type="submit" disabled={isProcessing} className={`w-full premium-btn py-3 flex items-center justify-center ${isProcessing ? 'opacity-70 cursor-not-allowed' : ''}`}>
-                  {isProcessing ? 'Initializing Secure Payment...' : 'Pay Now'}
+
+                <button
+                  form="checkout-form"
+                  type="submit"
+                  disabled={isProcessing}
+                  className="w-full premium-btn py-3"
+                >
+                  {isProcessing ? "Processing..." : "Pay Now"}
                 </button>
               </div>
             </div>

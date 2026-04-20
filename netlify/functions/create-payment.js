@@ -1,4 +1,5 @@
-require('dotenv').config();
+
+
 const Razorpay = require('razorpay');
 
 exports.handler = async (event) => {
