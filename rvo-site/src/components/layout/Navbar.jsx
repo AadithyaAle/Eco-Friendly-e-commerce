@@ -71,17 +71,17 @@ const Navbar = () => {
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-white/90 backdrop-blur-lg shadow-sm border-b border-forest-green/10 py-4'
-          : 'bg-ivory-white py-6'
+          ? 'bg-ivory-white shadow-lg py-2 border-b-[3px] border-premium-gold'
+          : 'bg-[#EBECEB] shadow-sm py-3 border-b-[3px] border-forest-green/40'
       }`}
     >
       <div className="section-padding py-0 flex items-center justify-between">
         {/* Logo */}
         <Link
           to="/"
-          className={`flex items-center`}
+          className={`flex items-center justify-center w-32`}
         >
-          <img src="/logo.png" alt="RVO Logo" className={`transition-all duration-300 object-contain ${isScrolled ? 'h-12' : 'h-16'}`} />
+          <img src="/logo.png" alt="RVO Logo" className={`transition-all duration-300 object-contain scale-[2.2] origin-center ${isScrolled ? 'h-12' : 'h-14'}`} />
         </Link>
 
         {/* Links */}

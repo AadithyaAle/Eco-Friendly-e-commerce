@@ -65,32 +65,32 @@ const Products = () => {
   });
 
   return (
-    <div className="section-padding py-24 pt-40 md:pt-48 bg-ivory-white min-h-screen">
-      <div className="flex flex-col md:flex-row justify-between items-end md:items-center mb-10 border-b border-forest-green/10 pb-6">
-        <div>
-          <h1 className="text-4xl font-serif text-forest-green mb-2">
-            {searchQuery ? `Search Results for "${searchQuery}"` : 'Our Collection'}
-          </h1>
-          <p className="text-forest-green/70">Showing {filteredProducts.length} sustainable products</p>
-        </div>
-        <div className="flex space-x-4 mt-6 md:mt-0">
-          <button 
-            className="md:hidden flex items-center space-x-2 px-4 py-2 border border-forest-green/20 rounded-full"
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            <FiFilter /> <span>Filters</span>
-          </button>
-          <div className="relative group">
-            <button className="flex items-center space-x-2 px-6 py-2 border border-forest-green/20 rounded-full bg-white hover:border-premium-gold transition-colors">
-              <span>Sort By: Newest</span> <FiChevronDown />
+    <div className="bg-ivory-white min-h-screen">
+      {/* Spacer for fixed navbar */}
+      <div className="h-24 md:h-32"></div>
+      
+      <div className="section-padding pb-24 pt-0">
+        <div className="flex flex-col md:flex-row justify-between items-end md:items-center mb-10 border-b border-forest-green/10 pb-6">
+          <div>
+            <h1 className="text-4xl font-serif text-forest-green mb-2">
+              {searchQuery ? `Search Results for "${searchQuery}"` : 'Our Collection'}
+            </h1>
+            <p className="text-forest-green/70">Showing {filteredProducts.length} sustainable products</p>
+          </div>
+          <div className="flex space-x-4 mt-6 md:mt-0">
+            <button 
+              className="md:hidden flex items-center space-x-2 px-4 py-2 border border-forest-green/20 rounded-full"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <FiFilter /> <span>Filters</span>
             </button>
+
           </div>
         </div>
-      </div>
 
       <div className="flex flex-col md:flex-row gap-10">
         {/* Sidebar Filters */}
-        <div className={`w-full md:w-64 flex-shrink-0 ${showFilters ? 'block' : 'hidden md:block'}`}>
+        <div className={`w-full md:w-64 shrink-0 ${showFilters ? 'block' : 'hidden md:block'}`}>
           <div className="bg-white p-6 rounded-xl border border-forest-green/5 shadow-sm sticky top-32">
             <h3 className="text-xl font-serif text-forest-green mb-6 border-b border-gray-100 pb-4">Filters</h3>
             
@@ -140,7 +140,7 @@ const Products = () => {
         </div>
 
         {/* Product Grid */}
-        <div className="flex-grow">
+        <div className="grow">
           {isLoading ? (
             // Skeleton Loaders
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -180,14 +180,14 @@ const Products = () => {
                   key={product.id} 
                   className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group border border-forest-green/5 relative flex flex-col"
                 >
-                  <Link to={`/product/${product.id}`} className="block relative h-72 overflow-hidden bg-gray-50 flex-shrink-0">
+                  <Link to={`/product/${product.id}`} className="block relative h-72 overflow-hidden bg-gray-50 shrink-0">
                     <img 
                       src={product.image_url || product.image || 'https://placehold.co/400x400?text=No+Image'} 
                       alt={product.name} 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                     />
                   </Link>
-                  <div className="p-6 flex flex-col flex-grow">
+                  <div className="p-6 flex flex-col grow">
                     <button 
                       className={`absolute top-4 right-4 p-2 backdrop-blur-sm rounded-full transition-all z-10 shadow-sm ${isInWishlist(product.id) ? 'bg-red-50 text-red-500' : 'bg-white/80 text-forest-green hover:text-premium-gold hover:bg-white'}`}
                       onClick={(e) => { 
@@ -227,6 +227,7 @@ const Products = () => {
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

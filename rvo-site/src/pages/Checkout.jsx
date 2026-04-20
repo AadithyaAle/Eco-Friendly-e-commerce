@@ -4,11 +4,10 @@ import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { createOrder } from '../services/orders';
-import { supabase } from '../lib/supabase';
 
 const Checkout = () => {
   const { cartItems, subtotal, clearCart } = useCart();
-  const { currentUser } = useAuth(); // still usable for email display
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -22,13 +21,9 @@ const Checkout = () => {
   const shipping = subtotal > 999 ? 0 : 99;
   const total = subtotal + shipping;
 
-  // -------------------------
-  // LOAD RAZORPAY SAFELY
-  // -------------------------
   const loadRazorpay = () =>
     new Promise((resolve) => {
       if (window.Razorpay) return resolve(true);
-
       const script = document.createElement('script');
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
       script.onload = () => resolve(true);
@@ -36,9 +31,6 @@ const Checkout = () => {
       document.body.appendChild(script);
     });
 
-  // -------------------------
-  // CHECKOUT HANDLER
-  // -------------------------
   const handleCheckout = async (e) => {
     e.preventDefault();
 
@@ -50,14 +42,12 @@ const Checkout = () => {
     setIsProcessing(true);
 
     try {
-      // 🔥 1. CHECK FIREBASE AUTH USER
       if (!currentUser) {
         toast.error("Please login to checkout");
         setIsProcessing(false);
         return;
       }
 
-      // 🔥 2. CREATE PAYMENT ORDER (NETLIFY FUNCTION)
       const response = await fetch('/.netlify/functions/create-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -70,7 +60,6 @@ const Checkout = () => {
         throw new Error("Payment gateway error");
       }
 
-      // 🔥 3. LOAD RAZORPAY
       const loaded = await loadRazorpay();
 
       if (!loaded || !window.Razorpay) {
@@ -79,7 +68,6 @@ const Checkout = () => {
         return;
       }
 
-      // 🔥 4. RAZORPAY CONFIG
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: data.amount,
@@ -92,7 +80,6 @@ const Checkout = () => {
           try {
             toast.loading("Verifying payment...", { id: "pay" });
 
-            // 🔥 5. VERIFY PAYMENT
             const verifyRes = await fetch(
               '/.netlify/functions/verify-payment',
               {
@@ -108,15 +95,13 @@ const Checkout = () => {
               throw new Error("Payment verification failed");
             }
 
-            // 🔥 6. SHIPPING DATA
             const shippingAddress = {
               name: `${formData.firstName} ${formData.lastName}`,
               address: formData.address
             };
 
-            // 🔥 7. CREATE ORDER IN SUPABASE
             await createOrder(
-              currentUser.uid, // Use Firebase UID
+              currentUser.uid,
               cartItems,
               total,
               shippingAddress,
@@ -149,7 +134,6 @@ const Checkout = () => {
         }
       };
 
-      // 🔥 8. OPEN PAYMENT
       const rzp = new window.Razorpay(options);
 
       rzp.on("payment.failed", () => {
@@ -173,96 +157,93 @@ const Checkout = () => {
     });
   };
 
-  // -------------------------
-  // UI
-  // -------------------------
   return (
-    <div className="section-padding py-32 bg-ivory-white min-h-screen">
-      <div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-12">
+    <div className="bg-ivory-white min-h-screen">
+      <div className="h-32 md:h-40"></div>
 
-        {/* FORM */}
-        <div className="flex-grow">
+      <div className="section-padding pb-32 pt-0">
+        <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-serif text-forest-green mb-8">
             Checkout
           </h1>
 
-          <form
-            id="checkout-form"
-            onSubmit={handleCheckout}
-            className="space-y-6 bg-white p-8 rounded-2xl border"
-          >
-            <h3 className="text-xl font-serif text-forest-green mb-4">
-              Shipping Details
-            </h3>
+          <div className="flex flex-col md:flex-row gap-12">
+            <div className="flex-grow">
+              <form
+                id="checkout-form"
+                onSubmit={handleCheckout}
+                className="space-y-6 bg-white p-8 rounded-2xl border border-forest-green/5 shadow-sm"
+              >
+                <h3 className="text-xl font-serif text-forest-green mb-4">
+                  Shipping Details
+                </h3>
 
-            <div className="grid grid-cols-2 gap-4">
-              <input
-                name="firstName"
-                placeholder="First Name"
-                value={formData.firstName}
-                onChange={handleChange}
-                required
-                className="input"
-              />
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    name="firstName"
+                    placeholder="First Name"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold"
+                  />
 
-              <input
-                name="lastName"
-                placeholder="Last Name"
-                value={formData.lastName}
-                onChange={handleChange}
-                required
-                className="input"
-              />
+                  <input
+                    name="lastName"
+                    placeholder="Last Name"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold"
+                  />
 
-              <input
-                name="address"
-                placeholder="Address"
-                value={formData.address}
-                onChange={handleChange}
-                required
-                className="col-span-2 input"
-              />
-            </div>
-          </form>
-        </div>
-
-        {/* SUMMARY */}
-        <div className="w-full md:w-80">
-          <div className="bg-white p-6 rounded-2xl border sticky top-32">
-
-            <h3 className="text-xl font-serif mb-6">
-              Order Summary
-            </h3>
-
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span>₹{subtotal}</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span>Shipping</span>
-                <span>{shipping === 0 ? "Free" : `₹${shipping}`}</span>
-              </div>
-
-              <div className="border-t pt-3 flex justify-between font-bold">
-                <span>Total</span>
-                <span>₹{total}</span>
-              </div>
+                  <input
+                    name="address"
+                    placeholder="Address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    required
+                    className="col-span-2 w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-premium-gold"
+                  />
+                </div>
+              </form>
             </div>
 
-            <button
-              form="checkout-form"
-              type="submit"
-              disabled={isProcessing}
-              className="w-full mt-6 premium-btn"
-            >
-              {isProcessing ? "Processing..." : "Pay Now"}
-            </button>
+            <div className="w-full md:w-80 flex-shrink-0">
+              <div className="bg-white p-6 rounded-2xl border border-forest-green/5 shadow-sm sticky top-40 z-10">
+                <h3 className="text-xl font-serif text-forest-green mb-6">
+                  Order Summary
+                </h3>
 
+                <div className="space-y-4 mb-6">
+                  <div className="flex justify-between">
+                    <span>Subtotal</span>
+                    <span>₹{subtotal}</span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span>Shipping</span>
+                    <span>{shipping === 0 ? "Free" : `₹${shipping}`}</span>
+                  </div>
+
+                  <div className="border-t pt-4 flex justify-between font-bold">
+                    <span>Total</span>
+                    <span>₹{total}</span>
+                  </div>
+                </div>
+
+                <button
+                  form="checkout-form"
+                  type="submit"
+                  disabled={isProcessing}
+                  className="w-full premium-btn py-3"
+                >
+                  {isProcessing ? "Processing..." : "Pay Now"}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-
       </div>
     </div>
   );

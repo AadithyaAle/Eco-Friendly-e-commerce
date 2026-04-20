@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
+import { FiX } from 'react-icons/fi';
 import { useAuth } from './AuthContext';
 import { 
   getCart, 
@@ -59,6 +61,25 @@ export function CartProvider({ children }) {
   }, [cartItems, currentUser, isLoading]);
 
   const addToCart = async (product, quantity = 1) => {
+    if (!currentUser) {
+      toast((t) => (
+        <div className="flex items-center space-x-3">
+          <span className="font-medium text-sm">Please sign in to add products to your cart</span>
+          <button 
+            onClick={() => toast.dismiss(t.id)} 
+            className="p-1.5 rounded-full hover:bg-white/20 transition-colors shrink-0"
+          >
+            <FiX className="text-lg" />
+          </button>
+        </div>
+      ), { 
+        position: 'top-right', 
+        duration: 2000, 
+        id: 'auth-required-toast' 
+      });
+      return false;
+    }
+
     // optimistic update
     setCartItems(prev => {
       const existing = prev.find(item => item.id === product.id);
@@ -89,6 +110,7 @@ export function CartProvider({ children }) {
         console.error(e);
       }
     }
+    return true;
   };
 
   const removeFromCart = async (id) => {
@@ -108,7 +130,13 @@ export function CartProvider({ children }) {
     const itemToUpdate = cartItems.find(item => item.id === id);
     if (!itemToUpdate) return;
     
-    const newQty = Math.max(1, itemToUpdate.qty + delta);
+    const newQty = itemToUpdate.qty + delta;
+    
+    // If quantity goes to 0, completely remove the item
+    if (newQty <= 0) {
+      removeFromCart(id);
+      return;
+    }
     
     setCartItems(prev => prev.map(item => {
       if (item.id === id) {
