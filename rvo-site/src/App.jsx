@@ -1,6 +1,14 @@
 import { Routes, Route, Outlet, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
+import ReactGA from "react-ga4";
+
+const GA_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
+
+if (GA_ID) {
+  ReactGA.initialize(GA_ID);
+  ReactGA.send("pageview");
+}
 
 // Contexts
 import { ProductProvider } from './context/ProductContext';
@@ -52,7 +60,17 @@ const ScrollToTop = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
+    // 1. Existing scroll logic
     window.scrollTo(0, 0);
+
+    // 2. Send pageview to Google Analytics every time the path changes
+    if (GA_ID) {
+      ReactGA.send({ 
+        hitType: "pageview", 
+        page: pathname,
+        title: pathname === "/" ? "Home" : pathname.substring(1) 
+      });
+    }
   }, [pathname]);
 
   return null;
