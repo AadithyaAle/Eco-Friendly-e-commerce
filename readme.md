@@ -240,5 +240,7 @@ npm run dev
 4.  Deploy\!
 
 -----
+Video Link 
+https://drive.google.com/file/d/1asH9fea9EfYrh1tOek-Mo1Q15ankzOBu/view?usp=drive_link
 
 
